@@ -1,0 +1,2108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PersonalHub — O app ideal para personal trainers</title>
+<meta name="description" content="Cobrança automática, gestão de alunos e treino num só lugar. Sem fidelidade. R$67,90/mês.">
+
+<!-- Space Grotesk — só pros números de destaque (cards de estatística) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+<!-- Candidatas de fonte (temporário — sai quando a escolha estiver fechada) -->
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Plus+Jakarta+Sans:wght@300..800&family=Manrope:wght@300..800&family=Sora:wght@300..800&family=Outfit:wght@300..800&family=DM+Sans:wght@300..800&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&f[]=general-sans@300,400,500,600,700&display=swap" rel="stylesheet">
+
+<!-- Hubot Sans self-hosted -->
+<style>
+  @font-face {
+    font-family: 'Hubot Sans';
+    src: url('fonts/Hubot-Sans.woff2') format('woff2');
+    font-weight: 200 900;
+    font-stretch: 75% 125%;
+    font-display: swap;
+  }
+  /* Fonte da interface — trocável pelo seletor temporário */
+  :root { --fonte: 'Geist'; }
+
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
+
+  /* --- Efeitos de fundo (inspirado na Naut, com nossa paleta) --- */
+  @keyframes blobDrift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-4%, 5%) scale(1.08); }
+  }
+  @keyframes blobDrift2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(5%, -4%) scale(1.05); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .glow-blob { animation: blobDrift 14s ease-in-out infinite; }
+  .glow-blob-2 { animation: blobDrift2 16s ease-in-out infinite; }
+  .glow-blob-light { animation: blobDrift 14s ease-in-out infinite; }
+  .glow-blob-light-2 { animation: blobDrift2 16s ease-in-out infinite; }
+
+  /* --- Brilhos de fundo: camada fixa, imóvel no scroll (padrão Naut) --- */
+  .bg-glows{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+  .bg-glows .glow{position:absolute;border-radius:50%}
+  .bg-glows .a{width:min(960px,90vw);height:min(960px,90vw);top:-420px;left:-340px;opacity:.20;
+    background:radial-gradient(closest-side,#E2312A,transparent)}
+  .bg-glows .b{width:min(780px,74vw);height:min(780px,74vw);top:58%;right:-250px;opacity:.14;
+    background:radial-gradient(closest-side,#E5403E,transparent)}
+  .bg-glows .c{width:min(660px,62vw);height:min(660px,62vw);top:38%;left:54%;opacity:.07;
+    background:radial-gradient(closest-side,#ff6b5b,transparent)}
+  @media (max-width:640px){ .bg-glows .a{top:-260px;left:-200px} .bg-glows .b{right:-160px} }
+
+  /* ===== Escala tipográfica — medida na navenaut.com =====
+     Naut: H1 86/300 ls-.03 · H2 52/300 ls-.03 lh1.02 · H3 18/700 lh1.55
+           lead 17/400 lh1.55 · corpo 14.5/400 lh1.6 · kicker 12/700 ls.2em
+           container 1060px · seção 100px topo/base                        */
+  main h1{ font-weight:300 !important; line-height:1.04 !important; letter-spacing:-.03em !important; }
+  main h2{ font-size:52px !important; font-weight:300 !important; line-height:1.02 !important;
+           letter-spacing:-.03em !important; }
+  main h3{ font-size:18px !important; font-weight:700 !important; line-height:1.55 !important;
+           letter-spacing:-.01em !important; }
+  /* parágrafo de apoio logo abaixo do título da seção */
+  main h2 + p{ font-size:17px !important; line-height:1.55 !important; }
+  /* rótulos em caixa alta acima do título */
+  main .kicker,
+  main p.uppercase,
+  main span.uppercase{ font-size:12px !important; font-weight:700 !important;
+                       letter-spacing:.2em !important; }
+  @media (max-width:1024px){
+    main h2{ font-size:40px !important; }
+  }
+  @media (max-width:640px){
+    main h2{ font-size:32px !important; line-height:1.1 !important; }
+    main h2 + p{ font-size:15.5px !important; }
+  }
+
+  .marquee-edge-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  }
+
+  /* --- Textura das seções brancas: malha de pontos + véu quente, pra não ficar chapado --- */
+  .fundo-claro::before,
+  .fundo-claro::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+  /* malha de pontos, esmaecendo nas bordas */
+  .fundo-claro::before {
+    background-image: radial-gradient(rgba(20,22,28,.10) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, #000 25%, transparent 78%);
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, #000 25%, transparent 78%);
+  }
+  /* véu quente no topo e base, dá profundidade sem sujar o branco */
+  .fundo-claro::after {
+    background:
+      linear-gradient(to bottom, rgba(226,49,42,.035), transparent 22%),
+      linear-gradient(to top,    rgba(20,22,28,.030), transparent 20%);
+  }
+  @media (max-width: 640px) {
+    .fundo-claro::before { background-size: 20px 20px; }
+  }
+  .text-glow-primary {
+    background: linear-gradient(90deg, #E5403E, #ff6b5b, #E2312A);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 40px rgba(226,49,42,0.45);
+  }
+  .marquee-track { animation: marquee 28s linear infinite; }
+  .marquee-track-rev { animation: marquee 34s linear infinite reverse; }
+  /* depoimentos — mesma técnica do marquee do topo, mas com duração própria (cards são bem mais largos que o texto do ticker) */
+  .dep-track { animation: marquee 46s linear infinite; }
+  .dep-track-rev { animation: marquee 52s linear infinite reverse; }
+  .dep-row:hover .dep-track, .dep-row:hover .dep-track-rev { animation-play-state: paused; }
+  @media (prefers-reduced-motion: reduce) {
+    .glow-blob, .glow-blob-2, .marquee-track, .marquee-track-rev, .dep-track, .dep-track-rev { animation: none; }
+  }
+  /* No celular os blobs de glow (em rem fixo) ficam desproporcionais à tela — encolhe e suaviza aqui */
+  @media (max-width: 640px) {
+    .glow-blob, .glow-blob-2 {
+      width: 11rem !important;
+      height: 11rem !important;
+      filter: blur(36px) !important;
+      opacity: 0.65 !important;
+    }
+    /* Mesma duração da animação mas tela mais estreita = percurso visual mais curto; acelera pra compensar */
+    .marquee-track { animation-duration: 13s; }
+    .marquee-track-rev { animation-duration: 16s; }
+    .dep-track { animation-duration: 32s; }
+    .dep-track-rev { animation-duration: 36s; }
+  }
+  /* linha do passo a passo — some no último item */
+  #passos li:last-child .passo-linha { display: none; }
+</style>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#E2312A',
+          'primary-light': '#E5403E',
+          'primary-dark': '#882828',
+          background: '#F7F3F3',
+          foreground: '#14161C',
+          'surface-dark': '#24272E',
+          muted: '#F5E3E3',
+          border: '#DDD9DA',
+        },
+        fontFamily: {
+          sans: ['var(--fonte)', 'Hubot Sans', 'system-ui', 'sans-serif'],
+          display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+</head>
+<body class="bg-foreground text-foreground font-sans antialiased">
+<div class="bg-glows" aria-hidden="true"><span class="glow a"></span><span class="glow b"></span><span class="glow c"></span></div>
+
+  <!-- S00 — Barra de anúncio -->
+  <div class="bg-foreground py-2.5 overflow-hidden">
+    <div class="flex whitespace-nowrap marquee-track">
+      <div class="flex items-center gap-2 pr-2">
+        <span class="inline-flex items-center gap-2 text-background/60 text-sm sm:text-base px-3">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z"/></svg>
+          Gestão completa por menos do que você perde com 1 aluno inadimplente por mês.
+        </span>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+        <a href="#precos" class="inline-flex items-center gap-1.5 text-primary-light text-sm sm:text-base font-bold hover:text-primary transition-colors">
+          Criar conta agora
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </a>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+        <span class="inline-flex items-center gap-2 text-background/60 text-sm sm:text-base px-3">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Mais de 2350 personais autônomos já usam o <span class="text-background font-semibold">PersonalHub</span>.
+        </span>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+      </div>
+      <div class="flex items-center gap-2 pr-2" aria-hidden="true">
+        <span class="inline-flex items-center gap-2 text-background/60 text-sm sm:text-base px-3">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 3.9 4.3.6-3.1 3 .7 4.3-3.8-2-3.8 2 .7-4.3-3.1-3 4.3-.6z"/></svg>
+          Gestão completa por menos do que você perde com 1 aluno inadimplente por mês.
+        </span>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+        <a href="#precos" class="inline-flex items-center gap-1.5 text-primary-light text-sm sm:text-base font-bold hover:text-primary transition-colors">
+          Criar conta agora
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </a>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+        <span class="inline-flex items-center gap-2 text-background/60 text-sm sm:text-base px-3">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          Mais de 2350 personais autônomos já usam o <span class="text-background font-semibold">PersonalHub</span>.
+        </span>
+        <span class="w-1 h-1 rounded-full bg-primary-light/60 shrink-0"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- S01 — Navbar (pílula flutuante, transparente) -->
+  <header class="sticky top-4 z-40 mt-3 px-4">
+    <nav class="max-w-4xl mx-auto h-16 flex items-center justify-between bg-foreground/30 backdrop-blur-md border border-white/10 shadow-lg shadow-black/10 rounded-full px-3 sm:px-5">
+      <a href="#" class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <img src="icone-ph.png" alt="PersonalHub" class="w-8 h-8 rounded-lg">
+        <span class="font-bold text-base sm:text-lg text-background whitespace-nowrap">Personal Hub</span>
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-sm font-medium text-background/60">
+        <a href="#funcionalidades" class="hover:text-background transition-colors">Funcionalidades</a>
+        <a href="#precos" class="hover:text-background transition-colors">Preços</a>
+        <a href="#depoimentos" class="hover:text-background transition-colors">Depoimentos</a>
+        <a href="#faq" class="hover:text-background transition-colors">FAQ</a>
+        <a href="#contato" class="hover:text-background transition-colors">Contate-nos</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="abrirMenuMobile()" aria-label="Abrir menu" class="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 text-background transition-colors cursor-pointer">
+          <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        </button>
+        <a href="#precos" class="hidden md:inline-flex items-center bg-primary hover:bg-primary-light text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 sm:py-2.5 rounded-full transition-all duration-500 hover:scale-[1.03] whitespace-nowrap">
+          Criar conta agora
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Menu mobile tela cheia (fora do <nav> de propósito: backdrop-blur-md no nav cria containing block
+       pra position:fixed, e o overlay não cobriria a tela inteira se ficasse dentro dele) -->
+  <div id="mobile-menu-overlay" class="hidden fixed inset-0 z-[100] bg-black">
+    <div class="h-full flex flex-col">
+      <div class="flex items-center justify-between px-5 pt-5 shrink-0">
+        <a href="#" class="flex items-center gap-2">
+          <img src="icone-ph.png" alt="PersonalHub" class="w-8 h-8 rounded-lg">
+          <span class="text-lg text-white">Personal Hub</span>
+        </a>
+        <button type="button" onclick="fecharMenuMobile()" aria-label="Fechar menu" class="flex items-center justify-center w-9 h-9 rounded-full bg-white/10 hover:bg-white/15 text-white transition-colors">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+        </button>
+      </div>
+      <nav class="flex flex-col mt-8 px-5">
+        <a href="#funcionalidades" onclick="fecharMenuMobile()" class="py-4 border-b border-white/10 text-2xl font-bold text-white hover:text-primary-light transition-colors">Funcionalidades</a>
+        <a href="#precos" onclick="fecharMenuMobile()" class="py-4 border-b border-white/10 text-2xl font-bold text-white hover:text-primary-light transition-colors">Preços</a>
+        <a href="#depoimentos" onclick="fecharMenuMobile()" class="py-4 border-b border-white/10 text-2xl font-bold text-white hover:text-primary-light transition-colors">Depoimentos</a>
+        <a href="#faq" onclick="fecharMenuMobile()" class="py-4 border-b border-white/10 text-2xl font-bold text-white hover:text-primary-light transition-colors">FAQ</a>
+        <a href="#contato" onclick="fecharMenuMobile()" class="py-4 text-2xl font-bold text-white hover:text-primary-light transition-colors">Contate-nos</a>
+      </nav>
+      <div class="mt-auto px-5 pb-8 shrink-0">
+        <a href="#precos" onclick="fecharMenuMobile()" class="block text-center bg-primary hover:bg-primary-light text-white font-semibold text-base py-4 rounded-full transition-colors">
+          Criar conta agora
+        </a>
+      </div>
+    </div>
+  </div>
+  <script>
+    function abrirMenuMobile(){
+      document.getElementById('mobile-menu-overlay').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+    function fecharMenuMobile(){
+      document.getElementById('mobile-menu-overlay').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+  </script>
+
+  <main>
+
+  <!-- S02 — Hero (dark) — headline + VSL na mesma seção -->
+  <section class="relative overflow-hidden text-background -mt-[76px] pt-[76px]">
+
+    <div class="relative z-10 max-w-[1060px] mx-auto px-6 pt-16 text-center">
+      <p class="flex flex-nowrap items-center justify-center gap-1 sm:gap-2 text-[clamp(6.5px,2.1vw,13px)] font-semibold text-background tracking-normal sm:tracking-wide bg-white/5 border border-white/10 rounded-full px-2.5 sm:px-3 py-1.5 mx-auto w-fit max-w-full">
+        <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-background shrink-0"></span>
+        <span class="shrink-0">COBRANÇA AUTOMÁTICA</span>
+        <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-background shrink-0"></span>
+        <span class="shrink-0">GESTÃO DE ALUNOS</span>
+        <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-background shrink-0"></span>
+        <span class="shrink-0">TREINOS E DIETAS</span>
+        <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-background shrink-0"></span>
+      </p>
+    </div>
+
+    <div class="relative z-10 max-w-[1060px] mx-auto px-6 pt-8 pb-16 text-center flex flex-col">
+        <h1 class="order-1 mt-5 text-[28px] leading-[1.16] sm:text-[44px] sm:leading-[1.08] font-light tracking-tight">
+          O app ideal para <span class="font-normal text-background">personal trainers</span> e profissionais do fitness que querem focar no que realmente importa: <span class="text-glow-primary font-normal">transformar pessoas</span>.
+        </h1>
+        <p class="order-2 mt-4 sm:mt-5 text-base sm:text-lg text-background/70 leading-relaxed max-w-2xl mx-auto">
+          Organize cobranças, acompanhe alunos e entregue treinos e dietas personalizadas — <span class="text-glow-primary font-semibold">tudo em um só lugar</span>.
+        </p>
+
+        <!-- VSL -->
+        <div id="vsl" class="order-3 relative mt-8 sm:mt-10 w-full max-w-3xl mx-auto scroll-mt-28">
+          <div class="relative aspect-video bg-black border border-white/10 rounded-2xl sm:rounded-[20px] overflow-hidden shadow-2xl shadow-black/50">
+            <video id="vslVideo" class="absolute inset-0 w-full h-full object-cover" preload="metadata" playsinline controlsList="nodownload">
+              <source src="/vsl.mp4" type="video/mp4">
+              Seu navegador não suporta vídeo HTML5.
+            </video>
+            <button id="vslPlayBtn" type="button" aria-label="Assistir ao vídeo" class="group absolute inset-0 z-10 flex items-center justify-center bg-gradient-to-br from-primary/10 to-transparent">
+              <span class="w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center rounded-full bg-primary group-hover:bg-primary-light transition-all duration-500 group-hover:scale-[1.03] shadow-lg shadow-primary/40">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+            </button>
+            <span id="vslBadge" class="absolute top-3 right-3 sm:top-4 sm:right-4 text-[11px] sm:text-xs font-semibold bg-black/50 text-background/80 px-2.5 py-1 rounded-full pointer-events-none">2 min</span>
+          </div>
+        </div>
+
+        <p class="order-4 mt-5 sm:mt-6 text-[13.5px] sm:text-[15px] text-background/55 leading-relaxed max-w-2xl mx-auto">
+          Seu negócio no <span class="text-background/85 font-semibold">piloto automático</span>: cobranças, alunos e alertas rodando sozinhos todo mês — sem planilha e sem o constrangimento de ficar cobrando aluno.
+        </p>
+
+        <!-- botões -->
+        <div class="order-5 mt-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3">
+          <a href="#precos" class="group inline-flex items-center justify-center text-center gap-2 bg-gradient-to-r from-primary-light to-[#8B1F1F] hover:from-primary hover:to-[#6E1919] text-white text-[13px] font-semibold px-4 py-3 sm:py-2 rounded-full transition-all duration-500 hover:scale-[1.03] shadow-lg shadow-black/30">
+            Quero começar agora
+            <svg class="w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
+            </svg>
+          </a>
+          <a href="#vsl" class="inline-flex items-center justify-center gap-2 border border-white/25 hover:border-primary-light text-background hover:text-primary-light text-[13px] font-semibold px-4 py-3 sm:py-2 rounded-full transition-all duration-500 hover:scale-[1.03]">
+            Ver como funciona (2 min)
+          </a>
+        </div>
+    </div>
+
+    <!-- Marquee de funcionalidades (pills, estilo Naut) -->
+    <div class="relative z-10 bg-white py-6 overflow-hidden">
+      <div class="marquee-edge-fade">
+      <div class="flex whitespace-nowrap marquee-track">
+        <div class="flex items-center gap-4 pr-4">
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Cobrança automática
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+            Alerta de aluno sumindo
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+            Montador de treino
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            Painel financeiro
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            Página pública
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            App do aluno
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 017.4-2"/></svg>
+            Sem fidelidade
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Cobrança automática
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+            Alerta de aluno sumindo
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+            Montador de treino
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            Painel financeiro
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            Página pública
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            App do aluno
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 017.4-2"/></svg>
+            Sem fidelidade
+          </span>
+        </div>
+        <div class="flex items-center gap-3 pr-3" aria-hidden="true">
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Cobrança automática
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+            Alerta de aluno sumindo
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+            Montador de treino
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            Painel financeiro
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            Página pública
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            App do aluno
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 017.4-2"/></svg>
+            Sem fidelidade
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Cobrança automática
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+            Alerta de aluno sumindo
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg>
+            Montador de treino
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            Painel financeiro
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/></svg>
+            Página pública
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            App do aluno
+          </span>
+          <span class="inline-flex items-center gap-2.5 bg-white border border-border shadow-sm text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+            <svg class="w-5 h-5 text-primary shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 017.4-2"/></svg>
+            Sem fidelidade
+          </span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S02b — O app na prática (branca) -->
+  <section class="relative isolate overflow-hidden fundo-claro bg-white border-b border-border">
+
+    <div class="relative z-10 max-w-[1060px] mx-auto px-6 py-20">
+
+      <!-- cabeçalho centralizado -->
+      <div class="max-w-2xl mx-auto text-center">
+        <p class="text-xs font-bold text-primary uppercase tracking-widest">Veja na prática</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-bold tracking-tight leading-tight">Como o Personal Hub funciona na prática</h2>
+        <p class="mt-4 text-lg text-foreground/60 leading-relaxed">Do cadastro à cobrança caindo sozinha — você mesmo configura tudo, sem enrolação.</p>
+      </div>
+
+      <!-- passo a passo + mockup -->
+      <div class="mt-14 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <ol id="passos" class="relative">
+          <li class="relative flex gap-4">
+            <div class="flex flex-col items-center shrink-0">
+              <span class="w-11 h-11 flex items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M9.5 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+              </span>
+              <span class="passo-linha flex-1 w-px bg-border mt-2"></span>
+            </div>
+            <div class="pb-7">
+              <p class="text-[11px] font-bold text-primary tracking-widest">01</p>
+              <h3 class="mt-1 text-lg font-bold leading-snug">Cadastre ou importe seus alunos</h3>
+              <p class="mt-1.5 text-[15px] text-foreground/60 leading-relaxed">Cadastre seus alunos com facilidade, ou importe sua lista — nossa IA organiza pra você em menos de 5 minutos.</p>
+            </div>
+          </li>
+          <li class="relative flex gap-4">
+            <div class="flex flex-col items-center shrink-0">
+              <span class="w-11 h-11 flex items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18v12H3z"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+              </span>
+              <span class="passo-linha flex-1 w-px bg-border mt-2"></span>
+            </div>
+            <div class="pb-7">
+              <p class="text-[11px] font-bold text-primary tracking-widest">02</p>
+              <h3 class="mt-1 text-lg font-bold leading-snug">Ative a cobrança automática</h3>
+              <p class="mt-1.5 text-[15px] text-foreground/60 leading-relaxed">O aluno escolhe: Pix recorrente ou cartão — e depois é notificado automaticamente no dia do pagamento.</p>
+            </div>
+          </li>
+          <li class="relative flex gap-4">
+            <div class="flex flex-col items-center shrink-0">
+              <span class="w-11 h-11 flex items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+              </span>
+              <span class="passo-linha flex-1 w-px bg-border mt-2"></span>
+            </div>
+            <div class="pb-7">
+              <p class="text-[11px] font-bold text-primary tracking-widest">03</p>
+              <h3 class="mt-1 text-lg font-bold leading-snug">Acompanhe tudo de forma simples</h3>
+              <p class="mt-1.5 text-[15px] text-foreground/60 leading-relaxed">Tudo que você precisa de forma clara: cobranças, painel financeiro, evolução do aluno, planilhas de treino sofisticadas e fáceis de montar.</p>
+            </div>
+          </li>
+        </ol>
+
+<!-- Visual placeholder — mockup de tela de app, ilustrativo, não é screenshot real do produto -->
+      <div class="relative">
+        <!-- Moldura de celular -->
+        <div class="relative max-w-[300px] mx-auto bg-[#1c1e23] border-[8px] border-[#101218] rounded-[2.75rem] shadow-2xl shadow-black/50 overflow-hidden">
+
+          <!-- Status bar -->
+          <div class="relative flex items-center justify-between px-6 pt-3.5 pb-1.5 text-background/80">
+            <span class="text-[13px] font-semibold">9:41</span>
+            <div class="flex items-center gap-1.5">
+              <svg class="w-4 h-3" viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="0.5"/><rect x="5" y="5" width="3" height="7" rx="0.5"/><rect x="10" y="2" width="3" height="10" rx="0.5"/><rect x="15" y="0" width="3" height="12" rx="0.5"/></svg>
+              <svg class="w-4 h-3" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6a14 14 0 0120 0"/><path d="M5.5 9.5a9 9 0 0113 0"/><path d="M9 13a4 4 0 016 0"/></svg>
+              <svg class="w-6 h-3.5" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="0.7" y="0.7" width="21" height="12.6" rx="3"/><rect x="2.3" y="2.3" width="14" height="9.4" rx="1.6" fill="currentColor" stroke="none"/><rect x="23" y="4.5" width="2.3" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+            </div>
+          </div>
+
+          <div class="relative px-5 pt-1.5 pb-4">
+            <!-- Cabeçalho do app — compacto, sem negrito -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <img src="icone-ph.png" alt="" class="w-5 h-5 rounded-[6px]">
+                <span class="text-background/70 text-[13px] font-normal">Personal Hub</span>
+              </div>
+              <span class="relative w-7 h-7 flex items-center justify-center rounded-full bg-white/5 text-background/50">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+                <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary-light"></span>
+              </span>
+            </div>
+
+            <!-- Dashboard — recebidos, com seletor de período -->
+            <div class="relative mt-3 bg-white/[0.04] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+              <div class="flex items-center justify-between">
+                <p class="text-background/50 text-xs">Recebidos</p>
+                <span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>
+                  12%
+                </span>
+              </div>
+              <p class="mt-1.5 text-background text-[24px] font-normal leading-none tracking-tight">R$ 4.320<span class="text-background/40 text-sm font-normal"> este mês</span></p>
+
+              <div class="mt-3 flex items-center gap-1 bg-black/25 rounded-full p-0.5">
+                <button class="flex-1 text-center text-[9.5px] font-semibold py-1.5 rounded-full bg-primary text-white shadow-sm shadow-primary/40">Este mês</button>
+                <button class="flex-1 text-center text-[9.5px] font-semibold py-1.5 rounded-full text-background/40">Selecionar mês</button>
+              </div>
+
+              <div class="mt-3 -mx-1">
+                <svg viewBox="0 0 280 68" class="w-full h-[52px]" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="heroAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E5403E" stop-opacity="0.55"/>
+                      <stop offset="100%" stop-color="#E5403E" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,48 C18,26 32,18 48,26 C64,34 76,44 92,32 C108,20 122,10 140,18 C158,26 170,38 188,30 C206,22 218,10 236,16 C254,22 266,30 280,20 L280,68 L0,68 Z" fill="url(#heroAreaGrad)"/>
+                  <path d="M0,48 C18,26 32,18 48,26 C64,34 76,44 92,32 C108,20 122,10 140,18 C158,26 170,38 188,30 C206,22 218,10 236,16 C254,22 266,30 280,20" fill="none" stroke="#E5403E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div class="flex items-center justify-between text-[8px] text-background/30 font-semibold">
+                <span>1</span><span>8</span><span>15</span><span>22</span><span>30</span>
+              </div>
+            </div>
+
+            <!-- Lista de alunos — com ações rápidas -->
+            <div class="mt-4 flex items-center justify-between">
+              <p class="text-background text-sm font-semibold">Alunos</p>
+              <span class="text-primary-light text-xs font-semibold">Ver todos</span>
+            </div>
+
+            <div class="mt-2.5 space-y-2">
+              <div class="flex items-center justify-between bg-white/[0.035] border border-white/[0.06] rounded-2xl px-3 py-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="relative w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[11px] font-bold shadow-sm shadow-primary/30">
+                    JP
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#1c1e23]"></span>
+                  </span>
+                  <p class="text-background text-sm font-medium truncate">João Pedro</p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0 pl-2">
+                  <button aria-label="Gerenciar treino" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  </button>
+                  <button aria-label="Ver faturas" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center justify-between bg-white/[0.035] border border-white/[0.06] rounded-2xl px-3 py-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="relative w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[11px] font-bold shadow-sm shadow-primary/30">
+                    CR
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#1c1e23]"></span>
+                  </span>
+                  <p class="text-background text-sm font-medium truncate">Camila Rocha</p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0 pl-2">
+                  <button aria-label="Gerenciar treino" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  </button>
+                  <button aria-label="Ver faturas" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center justify-between bg-white/[0.035] border border-white/[0.06] rounded-2xl px-3 py-2.5">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="relative w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-background/60 text-[11px] font-bold">
+                    MA
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#1c1e23]"></span>
+                  </span>
+                  <p class="text-background text-sm font-medium truncate">Marcos Alves</p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0 pl-2">
+                  <button aria-label="Gerenciar treino" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  </button>
+                  <button aria-label="Ver faturas" class="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-background/55">
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navegação inferior — compacta, legendas em branco -->
+          <div class="relative px-4 pb-3 pt-1">
+            <div class="flex items-center justify-around bg-white/[0.045] backdrop-blur-sm border border-white/10 rounded-full px-1.5 py-1.5 shadow-lg shadow-black/20">
+              <div class="flex flex-col items-center gap-0.5 px-2 py-1 rounded-full bg-primary/15">
+                <svg class="w-[15px] h-[15px] text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5L12 5l8 6.5"/><path d="M6 10.5V19a1 1 0 001 1h3v-5h4v5h3a1 1 0 001-1v-8.5"/></svg>
+                <span class="text-[7px] font-semibold text-primary-light">Início</span>
+              </div>
+              <div class="flex flex-col items-center gap-0.5 px-2 py-1 text-white/85">
+                <svg class="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                <span class="text-[7px] font-semibold">Alunos</span>
+              </div>
+              <span class="w-8"></span>
+              <div class="flex flex-col items-center gap-0.5 px-2 py-1 text-white/85">
+                <svg class="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="12"/><line x1="12" y1="20" x2="12" y2="8"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+                <span class="text-[7px] font-semibold">Financeiro</span>
+              </div>
+              <div class="flex flex-col items-center gap-0.5 px-2 py-1 text-white/85">
+                <svg class="w-[15px] h-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0114 0"/></svg>
+                <span class="text-[7px] font-semibold">Perfil</span>
+              </div>
+            </div>
+            <span class="absolute left-1/2 -translate-x-1/2 -top-3 w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/50 border-[3px] border-[#1c1e23]">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </span>
+          </div>
+        </div>
+        <p class="text-center text-xs text-foreground/40 mt-4">Ilustração do painel — telas reais do produto entram aqui</p>
+        </div>
+      </div>
+
+      <!-- CTA de fechamento do "como funciona" -->
+      <div class="mt-8">
+        <div class="text-center">
+          <a href="#precos" class="group inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white text-sm font-semibold px-6 py-3.5 rounded-full transition-all duration-500 hover:scale-[1.03] shadow-lg shadow-primary/25">
+            Quero começar minha gestão agora
+            <svg class="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- S03 — Faixa de prova -->
+  <!-- bloco escuro contínuo -->
+  <div class="relative overflow-hidden text-background">
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 py-14 text-center">
+      <p class="text-xs font-bold text-primary-light uppercase tracking-widest">Números reais da plataforma</p>
+      <h2 class="mt-3 text-2xl sm:text-[28px] font-light text-background leading-snug text-balance">
+        Não é promessa, é o que já está acontecendo
+      </h2>
+      <p class="mt-3 text-background/70 max-w-sm mx-auto text-base">O tanto que os personais autônomos já organizaram usando o PersonalHub.</p>
+
+      <div class="mt-9 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3" style="font-family:'Hubot Sans',Inter,system-ui,-apple-system,sans-serif">
+        <div class="rounded-[18px] bg-gradient-to-br from-white via-gray-100 to-gray-300 border border-black/[0.06] shadow-[0_6px_20px_rgba(0,0,0,0.04)] py-5 px-3 sm:py-[26px] sm:px-[18px] text-center">
+          <p class="leading-none whitespace-nowrap">
+            <span class="text-[26px] sm:text-[34px] font-semibold text-[#13140F]">+</span><span class="text-[26px] sm:text-[34px] font-semibold text-primary-light tracking-[-0.78px]" style="font-variant-numeric:tabular-nums">2.350</span>
+          </p>
+          <p class="mt-2 text-[13px] sm:text-[13.5px] text-[#6A6C62] leading-snug">personais autônomos confiam no PersonalHub</p>
+        </div>
+        <div class="rounded-[18px] bg-gradient-to-br from-white via-gray-100 to-gray-300 border border-black/[0.06] shadow-[0_6px_20px_rgba(0,0,0,0.04)] py-5 px-3 sm:py-[26px] sm:px-[18px] text-center">
+          <p class="leading-none">
+            <span class="text-[26px] sm:text-[34px] font-semibold text-primary-light tracking-[-0.78px]" style="font-variant-numeric:tabular-nums">100</span><span class="text-[26px] sm:text-[34px] font-semibold text-[#13140F]">%</span>
+          </p>
+          <p class="mt-2 text-[13px] sm:text-[13.5px] text-[#6A6C62] leading-snug">dos pagamentos acompanhados por nós</p>
+        </div>
+        <div class="rounded-[18px] bg-gradient-to-br from-white via-gray-100 to-gray-300 border border-black/[0.06] shadow-[0_6px_20px_rgba(0,0,0,0.04)] py-5 px-3 sm:py-[26px] sm:px-[18px] text-center">
+          <p class="leading-none">
+            <span class="text-[26px] sm:text-[34px] font-semibold text-primary-light tracking-[-0.78px]" style="font-variant-numeric:tabular-nums">97</span><span class="text-[26px] sm:text-[34px] font-semibold text-[#13140F]">%</span>
+          </p>
+          <p class="mt-2 text-[13px] sm:text-[13.5px] text-[#6A6C62] leading-snug">continuam usando após o 1º mês</p>
+        </div>
+        <div class="rounded-[18px] bg-gradient-to-br from-white via-gray-100 to-gray-300 border border-black/[0.06] shadow-[0_6px_20px_rgba(0,0,0,0.04)] py-5 px-3 sm:py-[26px] sm:px-[18px] text-center">
+          <p class="leading-none whitespace-nowrap">
+            <span class="text-[26px] sm:text-[34px] font-semibold text-[#13140F]">até </span><span class="text-[26px] sm:text-[34px] font-semibold text-primary-light tracking-[-0.78px]" style="font-variant-numeric:tabular-nums">5</span><span class="text-[26px] sm:text-[34px] font-semibold text-[#13140F]"> min</span>
+          </p>
+          <p class="mt-2 text-[13px] sm:text-[13.5px] text-[#6A6C62] leading-snug">pra cadastrar seus alunos com IA</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- S04 — O problema -->
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 py-20">
+    <p class="text-xs font-bold text-primary-light uppercase tracking-widest text-center">A realidade de quem trabalha sozinho</p>
+    <h2 class="mt-3 text-3xl font-bold text-center">Sem o PersonalHub, hoje é tudo feito separado e <span class="text-primary-light">de forma manual</span> por você</h2>
+    <p class="mt-4 text-center text-background/60 max-w-xl mx-auto">Você sabe treinar. O problema é o resto — cobrar, lembrar, correr atrás. Isso rouba o tempo que devia ser seu.</p>
+    <div class="mt-10 grid sm:grid-cols-2 gap-5">
+      <div class="flex items-start gap-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-[20px] p-6 hover:border-primary-light/30 hover:from-white/[0.12] hover:to-white/[0.04] hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
+        <span class="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary-light">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M12 8v4.5M9.5 10.2h1.8a1.3 1.3 0 0 1 0 2.6H9.5"/></svg>
+        </span>
+        <p class="text-background">Você mesmo manda mensagem cobrando cada aluno, todo mês</p>
+      </div>
+      <div class="flex items-start gap-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-[20px] p-6 hover:border-primary-light/30 hover:from-white/[0.12] hover:to-white/[0.04] hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
+        <span class="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary-light">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17l-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/></svg>
+        </span>
+        <p class="text-background">Cada aluno perdido = R$50 a R$150 a menos todo mês</p>
+      </div>
+      <div class="flex items-start gap-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-[20px] p-6 hover:border-primary-light/30 hover:from-white/[0.12] hover:to-white/[0.04] hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
+        <span class="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary-light">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        </span>
+        <p class="text-background">Você esquece de atualizar seus ganhos e não sabe quanto entrou no mês</p>
+      </div>
+      <div class="flex items-start gap-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/10 rounded-[20px] p-6 hover:border-primary-light/30 hover:from-white/[0.12] hover:to-white/[0.04] hover:-translate-y-0.5 transition-all duration-300 shadow-sm">
+        <span class="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-primary/15 border border-primary/25 text-primary-light">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 10.5h6M9 14h6M9 17.5h3"/></svg>
+        </span>
+        <p class="text-background">Ficha de treino montada do zero pra cada aluno novo, toda vez</p>
+      </div>
+    </div>
+    <div class="relative isolate mt-8 bg-white/[0.06] text-background rounded-[24px] p-8 text-center overflow-hidden shadow-xl shadow-black/40 border border-white/15">
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl -z-10"></div>
+      <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-primary-light/5 rounded-full blur-3xl -z-10"></div>
+      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-light via-primary to-primary-light"></div>
+      <p class="text-xs font-bold text-primary-light uppercase tracking-widest">A conta real</p>
+      <p class="relative mt-3 text-lg leading-relaxed">
+        1 aluno de R$150 perdido em março = <strong class="text-primary-light text-2xl">R$1.500</strong> a menos até dezembro.
+        Nada disso aparece no extrato — por isso ninguém corrige.
+      </p>
+    </div>
+    </div>
+  </section>
+  </div>
+
+  <!-- S06 — A virada / solução (dark, atmosférico) -->
+  <!-- bloco escuro contínuo -->
+  <div class="relative overflow-hidden text-background">
+  <section class="relative">
+    <div class="relative z-10 max-w-[1060px] mx-auto px-6 pt-10 sm:pt-20 pb-8 text-center">
+      <p class="text-sm font-bold text-primary-light uppercase tracking-widest text-center">A solução</p>
+      <h2 class="mt-3 text-3xl sm:text-4xl font-normal leading-tight">
+        O app ideal para <span class="text-glow-primary">personal trainers</span> e profissionais do fitness.
+      </h2>
+      <p class="mt-5 text-background/60 leading-relaxed max-w-2xl mx-auto">
+        Feito pro personal autônomo. Chamamos de <span class="text-white font-semibold">Piloto Automático do Personal</span>: resolvemos o que toma seu tempo e dinheiro.
+      </p>
+
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5">
+        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+          Rodando em menos de 1 hora
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+          Sem treinamento
+        </span>
+        <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-white">
+          <svg class="w-4 h-4 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+          Sem contrato
+        </span>
+      </div>
+
+      <div class="mt-16 grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto text-left">
+        <div class="relative flex flex-col bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 rounded-[20px] p-5 hover:border-primary-light/40 transition">
+          <span class="absolute top-3 right-4 text-3xl font-bold text-white/[0.06] leading-none">1</span>
+          <p class="text-[11px] font-bold text-primary-light uppercase tracking-widest">Passo 1</p>
+          <div class="relative mt-3 h-[172px] flex flex-col justify-center bg-[#0e0f12] border border-white/10 rounded-[16px] p-4 shadow-inner shadow-black/40">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[10px] font-semibold text-white">IMPORTAR ALUNOS</p>
+              <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full shrink-0">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+                concluído
+              </span>
+            </div>
+            <div class="mt-3 flex items-end gap-2">
+              <span class="font-display text-4xl font-bold text-white leading-none">12</span>
+              <span class="text-xs text-background/50 mb-1">alunos prontos</span>
+            </div>
+            <div class="mt-3.5 flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-lg px-2.5 py-2">
+              <span class="w-6 h-6 rounded-lg bg-primary/20 text-primary-light flex items-center justify-center shrink-0">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+              </span>
+              <span class="text-xs text-background/70 flex-1 min-w-0 truncate">lista-alunos.xlsx</span>
+              <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+            </div>
+            <div class="mt-2.5 h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full w-full bg-gradient-to-r from-primary to-primary-light rounded-full"></div>
+            </div>
+          </div>
+          <p class="mt-4 font-bold text-background">Cadastre ou importe alunos</p>
+          <p class="mt-1 text-sm text-background/50">Cadastre um aluno, ou importe a lista</p>
+        </div>
+
+        <div class="relative flex flex-col bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 rounded-[20px] p-5 hover:border-primary-light/40 transition">
+          <span class="absolute top-3 right-4 text-3xl font-bold text-white/[0.06] leading-none">2</span>
+          <p class="text-[11px] font-bold text-primary-light uppercase tracking-widest">Passo 2</p>
+          <div class="relative mt-3 h-[172px] flex flex-col justify-center bg-[#0e0f12] border border-white/10 rounded-[16px] p-4 shadow-inner shadow-black/40">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[10px] font-semibold text-white">PAGAMENTOS</p>
+              <span class="inline-flex items-center gap-1.5 text-[9px] font-semibold text-background/40 shrink-0">
+                <span class="relative flex w-1.5 h-1.5">
+                  <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping"></span>
+                  <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
+                </span>
+                ao vivo
+              </span>
+            </div>
+            <div class="mt-3 flex items-center gap-4">
+              <div class="relative w-[72px] h-[72px] shrink-0">
+                <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90">
+                  <circle cx="18" cy="18" r="15.9155" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+                  <circle cx="18" cy="18" r="15.9155" fill="none" stroke="url(#gradPagamentos)" stroke-width="3" stroke-linecap="round" stroke-dasharray="67, 100"/>
+                  <defs>
+                    <linearGradient id="gradPagamentos" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#E5403E"/>
+                      <stop offset="100%" stop-color="#E2312A"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <span class="text-base font-bold text-white leading-none">67%</span>
+                </div>
+              </div>
+              <div class="flex-1 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1.5 text-xs text-background/70"><span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>Em dia</span>
+                  <span class="text-sm font-bold text-white">2</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1.5 text-xs text-background/70"><span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>Pendente</span>
+                  <span class="text-sm font-bold text-white">1</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="mt-4 font-bold text-background">Ativa a cobrança automática</p>
+          <p class="mt-1 text-sm text-background/50">O aluno escolhe Pix ou cartão</p>
+        </div>
+
+        <div class="relative flex flex-col bg-gradient-to-b from-white/[0.07] to-white/[0.02] border border-white/10 rounded-[20px] p-5 hover:border-primary-light/40 transition">
+          <span class="absolute top-3 right-4 text-3xl font-bold text-white/[0.06] leading-none">3</span>
+          <p class="text-[11px] font-bold text-primary-light uppercase tracking-widest">Passo 3</p>
+          <div class="relative mt-3 h-[172px] flex flex-col justify-center bg-[#0e0f12] border border-white/10 rounded-[16px] p-4 shadow-inner shadow-black/40">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-[10px] font-semibold text-white">RECEITA MENSAL</p>
+              <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded-full shrink-0">▲ 12%</span>
+            </div>
+            <div class="mt-2 flex items-end gap-2">
+              <span class="font-display text-2xl font-bold text-white leading-none">R$4.230</span>
+              <span class="text-[10px] text-background/50 mb-0.5">este mês</span>
+            </div>
+            <div class="relative mt-2 h-12">
+              <svg viewBox="0 0 220 48" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+                <defs>
+                  <linearGradient id="gradPasso3" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#E5403E" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#E5403E" stop-opacity="0.02"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,34 C20,32 35,26 55,24 C75,22 90,29 110,26 C130,22 145,12 165,9 C180,6 200,4 220,2 L220,48 L0,48 Z" fill="url(#gradPasso3)"/>
+                <path d="M0,34 C20,32 35,26 55,24 C75,22 90,29 110,26 C130,22 145,12 165,9 C180,6 200,4 220,2" fill="none" stroke="#E5403E" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="220" cy="2" r="3" fill="#E5403E"/>
+              </svg>
+            </div>
+            <div class="mt-2.5 inline-flex items-center gap-1.5 text-[9px] font-semibold text-primary-light bg-primary/10 px-2 py-1 rounded-full w-fit">
+              <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              Alerta ativo — 0 alunos sumindo
+            </div>
+          </div>
+          <p class="mt-4 font-bold text-background">A cobrança roda sozinha</p>
+          <p class="mt-1 text-sm text-background/50">Alerta e painel sempre atualizados</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+  <!-- S07 — Pilar 1: produto principal -->
+  <!-- bloco claro contínuo — os dois pilares do produto -->
+  <div class="relative isolate overflow-hidden fundo-claro bg-white text-foreground border-y border-border">
+  <section id="funcionalidades" class="relative scroll-mt-24">
+    <div class="max-w-[1060px] mx-auto px-6 py-10 lg:py-20 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+    <div class="order-2 relative">
+      <div class="relative bg-[#0e0f12] border border-white/10 rounded-[24px] p-6 shadow-2xl shadow-foreground/20 w-full overflow-hidden">
+        <p class="relative text-[10px] font-semibold text-background/40 uppercase tracking-widest">Área do aluno</p>
+        <p class="relative mt-1.5 text-base font-bold text-background">Escolha como pagar</p>
+        <p class="relative mt-0.5 text-xs text-background/50">Mensalidade · Personal Ana L.</p>
+
+        <div class="relative mt-5 grid grid-cols-3 gap-2">
+          <div class="rounded-xl border border-white/10 bg-white/5 p-3 flex flex-col items-center gap-1.5">
+            <svg class="w-5 h-5 text-background/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span class="text-[10px] font-semibold text-background/45">Crédito</span>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 p-3 flex flex-col items-center gap-1.5">
+            <svg class="w-5 h-5 text-background/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            <span class="text-[10px] font-semibold text-background/45">Débito</span>
+          </div>
+          <div class="relative rounded-xl border-2 border-primary-light bg-primary/15 p-3 flex flex-col items-center gap-1.5">
+            <span class="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary-light flex items-center justify-center text-[9px] text-white">✓</span>
+            <svg class="w-5 h-5 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span class="text-[10px] font-bold text-primary-light">Pix recorrente</span>
+          </div>
+        </div>
+
+        <div class="relative mt-4 bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-background/50">Valor mensal</span>
+            <span class="text-sm font-bold text-background">R$ 120,00</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-background/50">Cobrança automática</span>
+            <span class="text-xs font-semibold text-background/75">Todo dia 5</span>
+          </div>
+        </div>
+
+        <div class="relative mt-4 flex items-center justify-between bg-primary/20 rounded-xl p-4">
+          <span class="text-sm font-semibold text-primary-light">Pix recebido — Ana L.</span>
+          <span class="text-primary-light">✓</span>
+        </div>
+      </div>
+      <p class="text-left text-xs text-foreground/40 mt-3">Ilustração — tela real do produto entra aqui</p>
+    </div>
+    <div class="order-1">
+      <p class="text-xs font-bold text-primary uppercase tracking-widest">Cobrança automática</p>
+      <h3 class="mt-3 text-2xl sm:text-3xl font-normal leading-tight">Você não cobra ninguém. O aluno paga sozinho, todo mês.</h3>
+      <ul class="mt-8 space-y-5">
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Cobrança recorrente via Pix ou cartão, sem você enviar uma única mensagem</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Aluno é notificado automaticamente na data certa</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Histórico de pagamento de cada aluno, sempre visível</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Sem taxa por aluno, sem surpresa na fatura</p>
+        </li>
+      </ul>
+    </div>
+    </div>
+  </section>
+
+  <!-- S08 — Pilar 2: controle e visibilidade -->
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 py-10 lg:py-16 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+    <div class="order-1 lg:order-2 lg:pt-6">
+      <p class="text-xs font-bold text-primary uppercase tracking-widest">Controle financeiro</p>
+      <h3 class="mt-3 text-2xl sm:text-3xl font-normal leading-tight">Você sabe exatamente quanto vai entrar no mês logo no primeiro dia.</h3>
+      <ul class="mt-8 space-y-5">
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Previsão de receita: o que já entrou, o que está a caminho, o que está atrasado</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Painel único: quem está ativo, quem está sumindo, quem está devendo</p>
+        </li>
+        <li class="flex items-start gap-4">
+          <span class="mt-0.5 w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 text-primary"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></span>
+          <p class="text-foreground/75 leading-relaxed pt-1.5">Alerta automático de inatividade — você age antes de perder a mensalidade</p>
+        </li>
+      </ul>
+    </div>
+    <div class="order-2 lg:order-1 relative">
+      <div class="relative bg-[#0e0f12] border border-white/10 rounded-[24px] p-6 shadow-2xl shadow-foreground/20 w-full overflow-hidden">
+        <p class="relative text-[10px] font-semibold text-background/40 uppercase tracking-widest">Painel financeiro</p>
+        <p class="relative mt-1.5 text-base font-bold text-background">Faturamento de julho</p>
+        <p class="relative mt-0.5 text-xs text-background/50">Personal Hub · Visão geral</p>
+
+        <div class="relative mt-5 grid grid-cols-2 gap-2">
+          <div class="rounded-xl border border-white/10 bg-white/5 p-3.5">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-background/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+              <p class="text-[10px] font-semibold text-background/45 uppercase tracking-wide">Esperado</p>
+            </div>
+            <p class="mt-1.5 text-lg text-background">R$ 5.000,00</p>
+          </div>
+          <div class="rounded-xl border-2 border-primary-light bg-primary/15 p-3.5">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3 h-3 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              <p class="text-[10px] font-bold text-primary-light uppercase tracking-wide">Recebido</p>
+            </div>
+            <p class="mt-1.5 text-lg text-primary-light">R$ 4.230,00</p>
+            <div class="mt-2 h-1 rounded-full bg-black/30 overflow-hidden">
+              <div class="h-full bg-primary-light rounded-full w-[85%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative mt-6">
+          <div class="flex items-end justify-between">
+            <span class="text-[10px] font-semibold text-background/40 uppercase tracking-wide">Evolução mensal</span>
+            <span class="text-xs font-bold text-primary-light">▲ 12%</span>
+          </div>
+          <div class="relative mt-6 h-20">
+            <svg viewBox="0 0 296 84" preserveAspectRatio="none" class="w-full h-full overflow-visible">
+              <defs>
+                <linearGradient id="evolFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#E5403E" stop-opacity="0.55"/>
+                  <stop offset="100%" stop-color="#E5403E" stop-opacity="0.03"/>
+                </linearGradient>
+              </defs>
+              <!-- esperado: linha tracejada -->
+              <path d="M0,46 C20,42 40,34 60,32 C80,30 100,44 120,40 C140,36 160,22 180,18 C200,14 220,34 240,28 C258,24 276,10 296,2" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-dasharray="3 4"/>
+              <!-- recebido: área preenchida -->
+              <path d="M0,54 C20,50 40,42 60,40 C80,38 100,52 120,48 C140,44 160,30 180,26 C200,22 220,42 240,36 C258,32 276,18 296,6 L296,84 L0,84 Z" fill="url(#evolFill)"/>
+              <path d="M0,54 C20,50 40,42 60,40 C80,38 100,52 120,48 C140,44 160,30 180,26 C200,22 220,42 240,36 C258,32 276,18 296,6" fill="none" stroke="#E5403E" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="296" cy="6" r="3.5" fill="#E5403E"/>
+            </svg>
+            <span class="absolute -top-1 right-0 text-[9px] font-bold text-primary-light whitespace-nowrap">R$4.230,00</span>
+          </div>
+          <div class="mt-1.5 grid grid-cols-6 text-center">
+            <span class="text-[9px] font-semibold text-background/35">FEV</span>
+            <span class="text-[9px] font-semibold text-background/35">MAR</span>
+            <span class="text-[9px] font-semibold text-background/35">ABR</span>
+            <span class="text-[9px] font-semibold text-background/35">MAI</span>
+            <span class="text-[9px] font-semibold text-background/35">JUN</span>
+            <span class="text-[9px] font-bold text-primary-light">JUL</span>
+          </div>
+        </div>
+
+        <div class="relative mt-6 grid grid-cols-2 gap-2">
+          <div class="rounded-xl bg-primary/15 border border-primary-light/25 p-3.5">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 shrink-0 rounded-full bg-primary/25 text-primary-light flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              </span>
+              <div>
+                <p class="text-xl font-bold text-primary-light leading-none">18</p>
+                <p class="mt-1 text-[10px] text-background/55">de 20 em dia</p>
+              </div>
+            </div>
+            <div class="mt-2.5 h-1 rounded-full bg-black/30 overflow-hidden">
+              <div class="h-full bg-primary-light rounded-full w-[90%]"></div>
+            </div>
+          </div>
+          <div class="rounded-xl bg-white/5 border border-white/10 p-3.5">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 shrink-0 rounded-full bg-white/10 text-background/60 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              <div>
+                <p class="text-xl font-bold text-background/85 leading-none">2</p>
+                <p class="mt-1 text-[10px] text-background/55">com pagamento atrasado</p>
+              </div>
+            </div>
+            <div class="mt-2.5 h-1 rounded-full bg-black/30 overflow-hidden">
+              <div class="h-full bg-background/30 rounded-full w-[10%]"></div>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="relative mt-5 w-full flex items-center justify-center gap-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-semibold py-2.5 rounded-xl transition">
+          Ver quem falta pagar
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <p class="text-left text-xs text-foreground/40 mt-3">Ilustração — tela real do produto entra aqui</p>
+    </div>
+    </div>
+  </section>
+  </div>
+
+  <!-- S09 — Grade de recursos -->
+  <!-- bloco escuro contínuo -->
+  <div class="relative overflow-hidden text-background">
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 py-20">
+      <h2 class="text-3xl font-bold text-center">Tudo que você precisa pra gerir, num lugar só</h2>
+      <p class="mt-3 text-center text-background/60">O que compõe o Piloto Automático do Personal, funcionalidade por funcionalidade.</p>
+      <div class="mt-12 grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+            <p class="text-lg font-semibold">Cobrança automática</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Pix ou cartão, recorrente — o aluno é notificado sem você mandar mensagem</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <p class="text-lg font-semibold">Gestão de alunos</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Perfil, status, histórico e planilha de treino, tudo num lugar só</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="16" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 10.5h6M9 14h6M9 17.5h3"/></svg></span>
+            <p class="text-lg font-semibold">Montador de treino</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Templates por objetivo: hipertrofia, emagrecimento e mais</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+            <p class="text-lg font-semibold">Progresso do aluno</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Dashboard e fotos de evolução pra provar seu trabalho</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg></span>
+            <p class="text-lg font-semibold">Comunicação organizada</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Chat separado do seu WhatsApp pessoal</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+            <p class="text-lg font-semibold">Alerta de aluno sumindo</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Notificação antes do cancelamento silencioso</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+            <p class="text-lg font-semibold">Página pública</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Um link só seu pra atrair novos alunos</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
+            <p class="text-lg font-semibold">App do aluno</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Ele recebe o treino, marca execução e acompanha a evolução — grátis pra ele</p>
+        </div>
+        <div class="group relative rounded-2xl bg-gradient-to-br from-white/[0.04] to-transparent hover:from-white/[0.08] p-6 transition-colors">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3.5">
+            <span class="w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform"><svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9.5c0-1.5 1.4-2.2 3-2.2s3 .8 3 2.2-1.5 1.9-3 2.2-3 .8-3 2.1 1.4 2.2 3 2.2 3-.7 3-2.2"/></svg></span>
+            <p class="text-lg font-semibold">Painel financeiro</p>
+          </div>
+          <p class="mt-3 text-sm text-background/65 leading-relaxed">Faturamento do mês, inadimplência e previsão de receita</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pra quem é (perfil de cliente ideal) -->
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 py-20">
+      <div class="max-w-2xl mx-auto text-center">
+        <p class="text-xs font-bold text-primary-light uppercase tracking-widest">Pra quem é</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-normal leading-tight">O PersonalHub foi feito pra esse tipo de personal</h2>
+        <p class="mt-4 text-background/70 leading-relaxed">Não é uma ferramenta genérica — é pensada pra quem já tem uma rotina de aluno de verdade e tá cansado de administrar tudo no improviso.</p>
+      </div>
+
+        <div class="mt-10 relative rounded-[28px] bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/10 shadow-2xl shadow-black/40 p-8 sm:p-10 max-w-3xl mx-auto overflow-hidden">
+          <div class="absolute -top-16 -right-16 w-56 h-56 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+          <div class="absolute -bottom-16 -left-16 w-56 h-56 bg-primary-light/10 rounded-full blur-3xl -z-10"></div>
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-light via-primary to-primary-light"></div>
+          <div class="grid sm:grid-cols-2 gap-x-10 gap-y-7">
+            <div class="flex items-start gap-4">
+              <span class="mt-0.5 w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              <p class="text-background/80 leading-relaxed pt-1.5">Personal com 5 a 50 alunos ativos na carteira</p>
+            </div>
+            <div class="flex items-start gap-4">
+              <span class="mt-0.5 w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </span>
+              <p class="text-background/80 leading-relaxed pt-1.5">Atendimento presencial, online ou híbrido</p>
+            </div>
+            <div class="flex items-start gap-4">
+              <span class="mt-0.5 w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              </span>
+              <p class="text-background/80 leading-relaxed pt-1.5">Quem hoje controla tudo no WhatsApp pessoal e em planilha</p>
+            </div>
+            <div class="flex items-start gap-4">
+              <span class="mt-0.5 w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+              </span>
+              <p class="text-background/80 leading-relaxed pt-1.5">Quem quer profissionalizar sem contratar assistente</p>
+            </div>
+          </div>
+        </div>
+      </div>
+  </section>
+
+  </div>
+
+  <!-- S16 — Prova social / depoimentos -->
+  <!-- ======= BLOCO ESCURO FINAL — preço, prova social e garantia ======= -->
+  <div class="relative overflow-hidden text-background">
+
+  <!-- S17 — PREÇO -->
+  <section id="precos" class="relative scroll-mt-24">
+    <div class="max-w-[1060px] mx-auto px-6 pt-20 pb-14">
+      <p class="text-xs font-bold text-primary-light uppercase tracking-widest text-center">Planos</p>
+      <h2 class="mt-3 text-3xl sm:text-4xl font-normal text-center tracking-tight">Escolha o plano ideal pra você</h2>
+      <p class="mt-3 text-center text-background/60 max-w-xl mx-auto">Escolha o plano do tamanho da sua carteira de alunos. Sem taxa escondida, sem letra miúda.</p>
+
+      <div class="mt-12 grid lg:grid-cols-3 gap-6 lg:gap-5 max-w-5xl mx-auto">
+
+        <!-- Essencial — preto -->
+        <div id="card-essencial" class="relative isolate rounded-[26px] border border-white/10 bg-gradient-to-b from-[#1b1d23] to-[#101114] p-7 shadow-xl flex flex-col overflow-hidden">
+          <div class="plano-glow hidden absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-56 bg-primary/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+          <div class="flex items-center">
+            <span id="badge-essencial" class="inline-block bg-white/10 border border-white/10 text-background text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Essencial</span>
+          </div>
+
+          <p class="mt-5 flex items-baseline gap-1.5">
+            <span id="preco-valor-essencial" class="text-4xl sm:text-[44px] font-bold text-white leading-none tracking-tight">R$67,90</span>
+            <span id="preco-mes-essencial" class="text-background/50 text-base">/mês</span>
+          </p>
+          <p class="mt-3 text-sm text-background/60">Pra quem tá começando ou tem uma carteira pequena.</p>
+
+          <div class="my-6 h-px bg-white/10"></div>
+
+          <ul class="space-y-3 flex-1">
+            <li class="flex items-start gap-2.5 text-sm text-white font-semibold leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Até 10 alunos
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Cobrança automática, Pix ou cartão
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Alerta de aluno sumindo
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Painel financeiro completo
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              App do aluno, grátis pra ele
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Montador de treino por objetivo
+            </li>
+          </ul>
+
+          <button type="button" data-plano="essencial" data-nome="Essencial" data-href="#contato?plano=essencial" class="plano-select group relative mt-6 w-full flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/30 px-5 py-3.5 text-[15px] font-semibold transition-all duration-300">
+            <span class="plano-check relative w-7 h-7 shrink-0 rounded-full border-2 border-white/30 flex items-center justify-center transition-all duration-300"></span>
+            <span class="plano-label flex-1 text-left text-background/70 transition-colors duration-300">Escolher esse plano</span>
+            <svg class="plano-arrow w-4 h-4 text-background/30 shrink-0 transition-all duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </button>
+        </div>
+
+        <!-- Profissional — tema segue seleção, vermelho por padrão -->
+        <div id="card-profissional" class="relative isolate rounded-[26px] border-2 border-primary-light bg-gradient-to-b from-[#3a1416] to-[#1a0d0f] p-7 shadow-2xl shadow-primary/20 flex flex-col overflow-hidden">
+          <div class="plano-glow absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-56 bg-primary/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+          <span class="absolute top-0 right-6 bg-primary-light text-white text-[9px] font-bold px-2.5 py-1 rounded-b-lg uppercase tracking-wide shadow-lg">Mais escolhido</span>
+
+          <div class="flex items-center">
+            <span id="badge-profissional" class="inline-block bg-primary/20 border border-primary/30 text-primary-light text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Profissional</span>
+          </div>
+
+          <p class="mt-5 flex items-baseline gap-1.5">
+            <span id="preco-valor-profissional" class="text-5xl sm:text-[52px] font-bold text-white leading-none tracking-tight">R$249,90</span>
+            <span id="preco-mes-profissional" class="text-background/50 text-lg">/mês</span>
+          </p>
+          <p class="mt-3 text-sm text-background/60">Pra quem já vive de personal e quer crescer sem virar bagunça.</p>
+
+          <div class="my-6 h-px bg-white/10"></div>
+
+          <ul class="space-y-3 flex-1">
+            <li class="flex items-start gap-2.5 text-sm text-white font-semibold leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Até 50 alunos
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-white font-semibold leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Tudo do Essencial, mais:
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Montador de treino com IA
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Importar lista de alunos com IA
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Gerador de PDF com progresso do seu aluno
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Comunicação pelo próprio aplicativo
+            </li>
+          </ul>
+
+          <button type="button" data-plano="profissional" data-nome="Profissional" data-href="#contato?plano=profissional" class="plano-select group relative mt-6 w-full flex items-center gap-3 rounded-full border border-white/20 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/35 px-5 py-3.5 text-[15px] font-semibold transition-all duration-300">
+            <span class="plano-check relative w-7 h-7 shrink-0 rounded-full border-2 border-white/35 flex items-center justify-center transition-all duration-300"></span>
+            <span class="plano-label flex-1 text-left text-background/80 transition-colors duration-300">Escolher esse plano</span>
+            <svg class="plano-arrow w-4 h-4 text-background/35 shrink-0 transition-all duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </button>
+        </div>
+
+        <!-- Ilimitado — tema segue seleção, preto por padrão -->
+        <div id="card-ilimitado" class="relative isolate rounded-[26px] border border-white/10 bg-gradient-to-b from-[#1b1d23] to-[#101114] p-7 shadow-xl flex flex-col overflow-hidden">
+          <div class="plano-glow hidden absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-56 bg-primary/30 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+
+          <div class="flex items-center">
+            <span id="badge-ilimitado" class="inline-block bg-white/10 border border-white/10 text-background text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Ilimitado</span>
+          </div>
+
+          <p class="mt-5 flex items-baseline gap-1.5">
+            <span id="preco-valor-ilimitado" class="text-4xl sm:text-[44px] font-bold text-white leading-none tracking-tight">R$397,90</span>
+            <span id="preco-mes-ilimitado" class="text-background/50 text-base">/mês</span>
+          </p>
+          <p class="mt-3 text-sm text-background/60">Pra operação grande, sem limite de carteira nem de recurso.</p>
+
+          <div class="my-6 h-px bg-white/10"></div>
+
+          <ul class="space-y-3 flex-1">
+            <li class="flex items-start gap-2.5 text-sm text-white font-semibold leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Alunos ilimitados
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-white font-semibold leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Tudo do Profissional, mais:
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Suporte prioritário — para você escalar seu faturamento
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Relatórios avançados de faturamento
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-background/85 leading-snug">
+              <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              Ajuda pra migrar seus dados pra cá, sem dor de cabeça
+            </li>
+          </ul>
+
+          <button type="button" data-plano="ilimitado" data-nome="Ilimitado" data-href="#contato?plano=ilimitado" class="plano-select group relative mt-6 w-full flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/30 px-5 py-3.5 text-[15px] font-semibold transition-all duration-300">
+            <span class="plano-check relative w-7 h-7 shrink-0 rounded-full border-2 border-white/30 flex items-center justify-center transition-all duration-300"></span>
+            <span class="plano-label flex-1 text-left text-background/70 transition-colors duration-300">Escolher esse plano</span>
+            <svg class="plano-arrow w-4 h-4 text-background/30 shrink-0 transition-all duration-300 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="mt-10 flex flex-col items-center gap-2">
+        <a id="plano-cta-final" href="#" class="group inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary-light to-[#8B1F1F] hover:from-primary hover:to-[#6E1919] text-white text-sm font-semibold px-8 py-4 rounded-full transition-all duration-500 hover:scale-[1.03] shadow-lg shadow-primary/25">
+          <span id="plano-cta-texto">Começar agora</span>
+          <svg class="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+        </a>
+        <p class="text-xs text-background/40">Escolha um plano acima pra atualizar o link</p>
+      </div>
+
+      <p class="mt-6 text-center text-sm text-background/45 max-w-2xl mx-auto">1 aluno inadimplente por mês te custa R$50 a R$150. Todos os planos são sem fidelidade: cancela quando quiser, direto no app.</p>
+    </div>
+  </section>
+
+  <!-- S18 — PROVA SOCIAL (2 fileiras auto-scroll, estilo Naut) -->
+  <section id="depoimentos" class="relative scroll-mt-24">
+    <div class="max-w-[1060px] mx-auto px-6 pt-16 text-center">
+      <p class="text-xs font-bold text-primary-light uppercase tracking-widest">Prova social</p>
+      <h2 class="mt-2 text-3xl font-normal tracking-tight">Quem já usa</h2>
+    </div>
+
+    <div class="mt-10 max-w-[1060px] mx-auto px-6 space-y-4">
+      <!-- fileira 1 — pra esquerda -->
+      <div class="dep-row marquee-edge-fade overflow-hidden">
+        <div class="flex gap-5 w-max dep-track">
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Depois que organizei todo meu trabalho com esse app, consegui encaixar o dobro de alunos na minha agenda e to ganhando duas vezes mais, não sei como vivia sem isso aqui antes kkkkk"</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">JR</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">João Ribas</p><p class="text-[11px] text-background/45">Personal de hipertrofia · Fortaleza, CE</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"O alerta de aluno sumindo já salvou uns 3 alunos que eu ia perder sem nem perceber."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">JP</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Juliana Prado</p><p class="text-[11px] text-background/45">Personal trainer online · Belo Horizonte, MG</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Parei de ficar constrangido de cobrar aluno atrasado. Agora o Pix cai sozinho todo mês."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">CE</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Carlos Eduardo</p><p class="text-[11px] text-background/45">Personal de emagrecimento · Curitiba, PR</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"A evolução em PDF impressiona o aluno, parece algo profissional de verdade."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">CD</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Camila Duarte</p><p class="text-[11px] text-background/45">Personal funcional · Brasília, DF</p></div>
+            </div>
+          </article>
+
+          <!-- duplicata pra loop contínuo -->
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Depois que organizei todo meu trabalho com esse app, consegui encaixar o dobro de alunos na minha agenda e to ganhando duas vezes mais, não sei como vivia sem isso aqui antes kkkkk"</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">JR</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">João Ribas</p><p class="text-[11px] text-background/45">Personal de hipertrofia · Fortaleza, CE</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"O alerta de aluno sumindo já salvou uns 3 alunos que eu ia perder sem nem perceber."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">JP</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Juliana Prado</p><p class="text-[11px] text-background/45">Personal trainer online · Belo Horizonte, MG</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Parei de ficar constrangido de cobrar aluno atrasado. Agora o Pix cai sozinho todo mês."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">CE</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Carlos Eduardo</p><p class="text-[11px] text-background/45">Personal de emagrecimento · Curitiba, PR</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"A evolução em PDF impressiona o aluno, parece algo profissional de verdade."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">CD</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Camila Duarte</p><p class="text-[11px] text-background/45">Personal funcional · Brasília, DF</p></div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+
+      <!-- fileira 2 — pra direita -->
+      <div class="dep-row marquee-edge-fade overflow-hidden">
+        <div class="flex gap-5 w-max dep-track-rev">
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Meus alunos recebem o treino certinho, por objetivo. Antes eu perdia um tempão montando ficha do zero pra cada um."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">RM</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Rafael Menezes</p><p class="text-[11px] text-background/45">Personal de musculação · Porto Alegre, RS</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Meus alunos adoram o app deles — grátis, simples, e param de me mandar print pra saber o treino do dia."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">PL</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Patrícia Lopes</p><p class="text-[11px] text-background/45">Personal de condicionamento físico · Recife, PE</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Agora eu sei exatamente quanto vai cair no mês antes mesmo de acabar. Isso mudou como eu planejo tudo."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">BC</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Bruno Castro</p><p class="text-[11px] text-background/45">Personal presencial · São Paulo, SP</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Testei sem medo porque não tinha fidelidade nenhuma. Hoje nem penso em cancelar."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">FA</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Fernanda Alves</p><p class="text-[11px] text-background/45">Personal de crossfit · Salvador, BA</p></div>
+            </div>
+          </article>
+
+          <!-- duplicata pra loop contínuo -->
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Meus alunos recebem o treino certinho, por objetivo. Antes eu perdia um tempão montando ficha do zero pra cada um."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">RM</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Rafael Menezes</p><p class="text-[11px] text-background/45">Personal de musculação · Porto Alegre, RS</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Meus alunos adoram o app deles — grátis, simples, e param de me mandar print pra saber o treino do dia."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">PL</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Patrícia Lopes</p><p class="text-[11px] text-background/45">Personal de condicionamento físico · Recife, PE</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Agora eu sei exatamente quanto vai cair no mês antes mesmo de acabar. Isso mudou como eu planejo tudo."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">BC</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Bruno Castro</p><p class="text-[11px] text-background/45">Personal presencial · São Paulo, SP</p></div>
+            </div>
+          </article>
+
+          <article class="shrink-0 w-[300px] sm:w-[360px] rounded-[24px] border border-white/10 bg-white/[0.05] p-6 flex flex-col" aria-hidden="true">
+            <div class="flex gap-0.5 text-primary-light"><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg><svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6 7.1.7-5.4 4.8 1.6 7-6.2-3.7-6.2 3.7 1.6-7-5.4-4.8 7.1-.7z"/></svg></div>
+            <p class="mt-4 text-base leading-relaxed text-background/85">"Testei sem medo porque não tinha fidelidade nenhuma. Hoje nem penso em cancelar."</p>
+            <div class="mt-5 flex items-center gap-3">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/20 text-primary-light text-xs font-bold">FA</span>
+              <div class="leading-tight"><p class="text-sm font-semibold text-white">Fernanda Alves</p><p class="text-[11px] text-background/45">Personal de crossfit · Salvador, BA</p></div>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-[1060px] mx-auto px-6">
+      <p class="mt-8 text-center text-sm text-background/50"><b class="text-background/80">2.350+ personais autônomos</b> confiam no PersonalHub · <b class="text-background/80">94%</b> continuam usando depois de 3 meses</p>
+    </div>
+  </section>
+
+  <!-- S19 — GARANTIA -->
+  <section class="relative">
+    <div class="max-w-[1060px] mx-auto px-6 pt-20 pb-20">
+      <div class="max-w-xl mx-auto text-center">
+        <p class="text-xs font-bold text-primary-light uppercase tracking-widest">Garantia</p>
+        <h2 class="mt-3 text-3xl sm:text-4xl font-normal leading-tight">Sem risco pra testar</h2>
+        <p class="mt-3 text-background/60 leading-relaxed">Você decide se fica — a gente não segura ninguém com multa nem letra miúda.</p>
+      </div>
+
+      <div class="mt-12 relative rounded-[28px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.01] shadow-2xl shadow-black/40 overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-primary/15 rounded-full blur-3xl -z-10"></div>
+        <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-primary-light/10 rounded-full blur-3xl -z-10"></div>
+        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-light via-primary to-primary-light"></div>
+        <span class="absolute top-5 right-6 hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold text-primary-light uppercase tracking-widest">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9,12 11,14 15,10"/></svg>
+          Garantia total
+        </span>
+
+        <div class="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
+          <div class="p-8 text-center sm:text-left">
+            <span class="w-12 h-12 mx-auto sm:mx-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.4-2"/></svg>
+            </span>
+            <p class="mt-4 font-bold text-background">Sem fidelidade</p>
+            <p class="mt-1.5 text-sm text-background/60 leading-relaxed">Cancela no primeiro mês se quiser, sem multa, sem ligação</p>
+          </div>
+          <div class="p-8 text-center sm:text-left">
+            <span class="w-12 h-12 mx-auto sm:mx-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+            </span>
+            <p class="mt-4 font-bold text-background">Dados protegidos</p>
+            <p class="mt-1.5 text-sm text-background/60 leading-relaxed">Cancelou? Seus dados não somem — ficam congelados e voltam intactos quando reativar</p>
+          </div>
+          <div class="p-8 text-center sm:text-left">
+            <span class="w-12 h-12 mx-auto sm:mx-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-lg shadow-primary/25">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="13.5" width="4" height="6" rx="2"/><rect x="17.5" y="13.5" width="4" height="6" rx="2"/></svg>
+            </span>
+            <p class="mt-4 font-bold text-background">Suporte de verdade</p>
+            <p class="mt-1.5 text-sm text-background/60 leading-relaxed">Direto pra dúvidas de configuração — sem chatbot, sem fila</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+
+
+  <!-- S19 — CTA final (dark, atmosférico) -->
+  <!-- bloco escuro contínuo -->
+  <div class="relative overflow-hidden text-background">
+  <section class="relative overflow-hidden">
+    <div class="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/4 w-[36rem] h-[36rem] bg-primary/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    <div class="absolute top-10 left-10 w-56 h-56 bg-primary-light/10 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+    <div class="relative z-10 max-w-[1060px] mx-auto px-6 py-24 text-center">
+      <p class="inline-flex items-center gap-2.5 text-xs font-bold text-primary-light uppercase tracking-widest bg-white/5 border border-white/10 rounded-full px-3 py-1.5 mx-auto w-fit">
+        <span class="relative flex w-2 h-2 shrink-0">
+          <span class="absolute inline-flex h-full w-full rounded-full bg-primary-light opacity-75 animate-ping"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-light"></span>
+        </span>
+        Cada mês de atraso custa R$100 a R$300 do seu bolso
+      </p>
+      <h2 class="mt-5 text-3xl sm:text-4xl font-normal leading-tight">
+        Você já sabe quanto está perdendo. A pergunta é: <span class="text-glow-primary font-normal">até quando?</span>
+      </h2>
+      <p class="mt-4 text-lg text-background/70">Comece hoje. Receba em dia. Recupere seu tempo.</p>
+      <p class="mt-1 text-sm text-background/40">Planos a partir de R$67,90. Cancele quando quiser.</p>
+      <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+        <a href="#precos" class="group inline-flex items-center gap-2 bg-gradient-to-r from-primary-light to-[#8B1F1F] hover:from-primary hover:to-[#6E1919] text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-500 hover:scale-[1.03] shadow-lg shadow-black/30">
+          Quero começar agora
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
+          </svg>
+        </a>
+        <a href="#faq" class="inline-flex items-center gap-2 border border-white/25 hover:border-primary-light text-background hover:text-primary-light text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-500 hover:scale-[1.03]">
+          Tenho dúvidas — ver o FAQ
+        </a>
+      </div>
+
+      <div class="mt-10 flex items-center justify-center gap-3">
+        <div class="flex -space-x-2.5">
+          <span class="w-8 h-8 rounded-full bg-primary/25 border-2 border-foreground flex items-center justify-center text-[10px] font-bold text-primary-light">JR</span>
+          <span class="w-8 h-8 rounded-full bg-primary/25 border-2 border-foreground flex items-center justify-center text-[10px] font-bold text-primary-light">JP</span>
+          <span class="w-8 h-8 rounded-full bg-primary/25 border-2 border-foreground flex items-center justify-center text-[10px] font-bold text-primary-light">CE</span>
+          <span class="w-8 h-8 rounded-full bg-primary/25 border-2 border-foreground flex items-center justify-center text-[10px] font-bold text-primary-light">RM</span>
+        </div>
+        <p class="text-xs text-background/50"><b class="text-background/80">2.350+ personais autônomos</b> já confiam no PersonalHub</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- S20 — FAQ -->
+  <section id="faq" class="relative isolate overflow-hidden fundo-claro bg-white text-foreground border-y border-border">
+    <div class="max-w-3xl mx-auto px-6 py-20">
+      <div class="text-center">
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-light bg-primary/20 border border-primary/20 rounded-full px-3 py-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.8c0 1.7-2.4 1.7-2.4 3.4"/><line x1="12" y1="17" x2="12" y2="17"/></svg>
+          Perguntas frequentes
+        </span>
+        <h2 class="mt-4 text-4xl font-bold">Tire suas dúvidas</h2>
+        <p class="mt-3 text-foreground/70">As respostas para as perguntas mais comuns sobre o PersonalHub.</p>
+      </div>
+      <div class="mt-10 space-y-3">
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Já uso planilha de graça, por que pagar mais um app?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Porque a planilha é grátis, mas o preço que ela te cobra é escondido: ela não cobra o aluno por você, não avisa quando alguém tá sumindo, e não te dá nenhuma visão real de quanto entra por mês.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Já testei um app de gestão antes e era complicado.
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">A maioria dos apps do mercado é feita pra academia, com equipe de TI pra configurar e treinar todo mundo. O PersonalHub é construído 100% pro personal autônomo que trabalha sozinho — sem manual, rodando em menos de 1 hora do zero.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            E se eu não gostar? Fico preso num contrato?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Não. É mês a mês, sem fidelidade e sem multa — você cancela quando quiser, direto no app, sem precisar ligar ou falar com ninguém.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Meus alunos vão achar estranho receber cobrança automática?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Não costuma ser estranho — eles já pagam academia, Netflix e Spotify no automático, então cobrança recorrente já é rotina. E pra você, resolve o maior constrangimento do dia a dia: ter que cobrar quem já é seu aluno.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Vale a pena pra quem tem poucos alunos?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Vale, principalmente pra quem tem poucos — cada aluno perdido pesa muito mais no seu mês quando a carteira é pequena. Em média, personais recuperam R$430 a mais por mês com a inadimplência reduzida, bem mais do que o custo do plano.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Funciona para personal online, presencial ou os dois?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Funciona pros dois. A área do aluno e a comunicação separada funcionam do mesmo jeito, esteja você atendendo presencial, online, ou os dois ao mesmo tempo.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            E se eu cancelar — perco os dados dos meus alunos?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Não. Seus dados não são apagados: ficam guardados e congelados na sua conta. Enquanto a assinatura estiver inativa você não acessa o painel, mas nada é excluído. Reativou, está tudo exatamente como você deixou — alunos, histórico, treinos e financeiro.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            Eu já tenho meus treinos prontos. Vou ter que refazer tudo dentro do app?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Não. Você monta seus templates uma vez — do jeito que já prescreve — e depois é só puxar e ajustar pro aluno novo. Sua metodologia continua sendo sua; o app só para de te obrigar a redigitar ela toda semana.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="group border border-border shadow-sm open:border-primary open:bg-primary/[0.03] open:shadow-lg open:shadow-primary/5 rounded-[20px] p-5 transition-colors">
+          <summary class="flex items-center justify-between gap-4 cursor-pointer font-semibold">
+            É seguro colocar os dados dos meus alunos e meus dados bancários aqui?
+            <span class="shrink-0 w-8 h-8 rounded-full bg-border/70 group-open:bg-primary text-foreground/50 group-open:text-white flex items-center justify-center transition-colors duration-300">
+              <svg class="w-4 h-4 transition-transform duration-300 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </summary>
+          <div class="grid grid-rows-[0fr] group-open:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+            <div class="overflow-hidden">
+              <p class="pt-3 text-foreground/70 text-sm leading-relaxed">Sim. Toda conexão é criptografada por SSL, os dados são protegidos conforme a LGPD, fazemos backup automático todos os dias, e os seus dados — e os dos seus alunos — nunca são vendidos nem compartilhados com terceiros.</p>
+            </div>
+          </div>
+        </details>
+
+      </div>
+    </div>
+  </section>
+  </div>
+
+  </main>
+
+  <!-- S21 — Rodapé -->
+  <footer id="contato" class="relative isolate overflow-hidden bg-foreground text-background/70">
+    <div class="absolute -bottom-24 -left-24 w-[28rem] h-[28rem] bg-primary/10 rounded-full blur-3xl -z-10"></div>
+    <div class="max-w-[1060px] mx-auto px-6 pt-16 pb-8">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div class="lg:col-span-2">
+          <div class="flex items-center gap-2.5">
+            <img src="icone-ph.png" alt="PersonalHub" class="w-8 h-8 rounded-lg">
+            <span class="font-bold text-background">Personal Hub</span>
+          </div>
+          <p class="mt-3 text-sm max-w-xs leading-relaxed">Gestão completa pro personal trainer autônomo — cobrança, alunos e treino num lugar só, sem planilha e sem cobrar no WhatsApp.</p>
+          <div class="mt-5 flex items-center gap-3">
+            <a href="#" class="w-9 h-9 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:text-background flex items-center justify-center transition-colors" aria-label="Instagram">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-background/40">Produto</p>
+          <ul class="mt-3 space-y-2.5 text-sm">
+            <li><a href="#funcionalidades" class="hover:text-background transition-colors">Funcionalidades</a></li>
+            <li><a href="#precos" class="hover:text-background transition-colors">Preços</a></li>
+            <li><a href="#depoimentos" class="hover:text-background transition-colors">Depoimentos</a></li>
+            <li><a href="#faq" class="hover:text-background transition-colors">FAQ</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-background/40">Suporte</p>
+          <ul class="mt-3 space-y-2.5 text-sm">
+            <li><a href="#faq" class="hover:text-background transition-colors">Central de ajuda</a></li>
+            <li class="text-background/60">suporte@personalhub.com.br</li>
+            <li class="text-background/60">Suporte direto, sem chatbot</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-12 pt-8 border-t border-white/10">
+        <p class="text-xs font-semibold uppercase tracking-wide text-background/40">Segurança e privacidade</p>
+        <p class="mt-2 text-sm max-w-2xl leading-relaxed">Lidamos com dado de pagamento e dado pessoal de aluno — isso importa.</p>
+
+        <div class="mt-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-3">
+          <p class="flex items-start gap-2.5 text-sm">
+            <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            SSL: conexão criptografada em todas as páginas
+          </p>
+          <p class="flex items-start gap-2.5 text-sm">
+            <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.5v5c0 4.6-3.3 8.4-8 9.5-4.7-1.1-8-4.9-8-9.5v-5z"/><polyline points="9,12 11,14 15,10"/></svg>
+            LGPD: dados protegidos conforme a Lei 13.709/2018
+          </p>
+          <p class="flex items-start gap-2.5 text-sm">
+            <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+            Backup automático diário
+          </p>
+          <p class="flex items-start gap-2.5 text-sm">
+            <svg class="w-4 h-4 mt-0.5 shrink-0 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            Cancelou? Seus dados ficam congelados e voltam intactos quando você reativar
+          </p>
+        </div>
+
+        <p class="mt-5 text-sm text-background/55">Seus dados e os dos seus alunos nunca são vendidos ou compartilhados com terceiros.</p>
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <p class="text-sm">© 2026 PersonalHub. Todos os direitos reservados.</p>
+        <p class="text-xs text-background/40">CNPJ 00.000.000/0001-00 · Feito no Brasil</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Alerta topo — avisa que é preciso escolher um plano antes de prosseguir -->
+  <div id="alerta-plano" class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-3 bg-gradient-to-r from-primary-light to-primary-dark text-white text-sm font-semibold pl-4 pr-3 py-3 rounded-2xl shadow-2xl shadow-primary/40 border border-white/15 opacity-0 -translate-y-6 pointer-events-none transition-all duration-400 ease-out max-w-[calc(100%-2rem)]" role="alert" aria-live="assertive">
+    <span class="w-7 h-7 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 17h.01"/></svg>
+    </span>
+    <span class="leading-snug">Selecione um plano antes de prosseguir.</span>
+    <button type="button" id="alerta-plano-fechar" aria-label="Fechar aviso" class="ml-1 w-6 h-6 rounded-full hover:bg-white/15 flex items-center justify-center shrink-0 transition-colors">
+      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <script>
+    // Seletor de plano — nenhum vem marcado por padrão; exige escolha antes de seguir pro CTA final
+    (function () {
+      var botoes = document.querySelectorAll('[data-plano]');
+      var ctaFinal = document.getElementById('plano-cta-final');
+      var ctaTexto = document.getElementById('plano-cta-texto');
+      if (!botoes.length || !ctaFinal) return;
+
+      var SELECTED_BTN = ['bg-gradient-to-r', 'from-primary-light', 'to-primary-dark', 'border-transparent', 'shadow-lg', 'shadow-primary/40', 'scale-[1.02]'];
+      var SELECTED_CHECK = ['bg-white', 'border-white', 'scale-105'];
+      var UNSELECTED_LABEL_BY_BTN = {}; // remembers each button's original muted label color
+      var planoSelecionado = null;
+
+      // Tema do card (borda/fundo/badge/brilho) segue o plano selecionado: vermelho no ativo, preto nos demais.
+      // O selo "Mais escolhido" e o tamanho do preço ficam fixos no Profissional, não mudam com a seleção.
+      var CARD_PRETO = 'relative isolate rounded-[26px] border border-white/10 bg-gradient-to-b from-[#1b1d23] to-[#101114] p-7 shadow-xl flex flex-col overflow-hidden';
+      var CARD_VERMELHO = 'relative isolate rounded-[26px] border-2 border-primary-light bg-gradient-to-b from-[#3a1416] to-[#1a0d0f] p-7 shadow-2xl shadow-primary/20 flex flex-col overflow-hidden';
+      var BADGE_PRETO = 'inline-block bg-white/10 border border-white/10 text-background text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide';
+      var BADGE_VERMELHO = 'inline-block bg-primary/20 border border-primary/30 text-primary-light text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wide';
+      var IDS_PLANOS = ['essencial', 'profissional', 'ilimitado'];
+
+      function aplicarTemaPlanos(planoAtivo) {
+        IDS_PLANOS.forEach(function (id) {
+          var ativo = id === planoAtivo;
+          var card = document.getElementById('card-' + id);
+          if (!card) return;
+          var badge = document.getElementById('badge-' + id);
+          var glow = card.querySelector('.plano-glow');
+          card.className = ativo ? CARD_VERMELHO : CARD_PRETO;
+          if (badge) badge.className = ativo ? BADGE_VERMELHO : BADGE_PRETO;
+          if (glow) glow.classList.toggle('hidden', !ativo);
+        });
+      }
+
+      function selecionar(btn) {
+        aplicarTemaPlanos(btn.dataset.plano);
+        botoes.forEach(function (b) {
+          var check = b.querySelector('.plano-check');
+          var label = b.querySelector('.plano-label');
+          var arrow = b.querySelector('.plano-arrow');
+          check.innerHTML = '';
+          check.classList.remove.apply(check.classList, SELECTED_CHECK);
+          b.classList.remove.apply(b.classList, SELECTED_BTN);
+          if (label) {
+            label.classList.remove('text-white');
+            if (UNSELECTED_LABEL_BY_BTN[b.dataset.plano]) label.classList.add(UNSELECTED_LABEL_BY_BTN[b.dataset.plano]);
+          }
+          if (arrow) { arrow.classList.remove('text-white', 'translate-x-1'); }
+        });
+        var check = btn.querySelector('.plano-check');
+        var label = btn.querySelector('.plano-label');
+        var arrow = btn.querySelector('.plano-arrow');
+        check.classList.add.apply(check.classList, SELECTED_CHECK);
+        check.innerHTML = '<svg class="w-4 h-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>';
+        btn.classList.add.apply(btn.classList, SELECTED_BTN);
+        if (label) {
+          var mutedClass = [].find.call(label.classList, function (c) { return c.indexOf('text-background/') === 0; });
+          if (mutedClass) { UNSELECTED_LABEL_BY_BTN[btn.dataset.plano] = mutedClass; label.classList.remove(mutedClass); }
+          label.classList.add('text-white');
+        }
+        if (arrow) arrow.classList.add('text-white', 'translate-x-1');
+        planoSelecionado = btn.dataset.plano;
+        ctaFinal.setAttribute('href', btn.dataset.href);
+        if (ctaTexto) ctaTexto.textContent = 'Começar agora — ' + btn.dataset.nome;
+      }
+
+      botoes.forEach(function (b) {
+        b.addEventListener('click', function () { selecionar(b); });
+      });
+
+      // Profissional vem selecionado por padrão (tema vermelho); os outros dois ficam no tema preto
+      var btnPadrao = document.querySelector('[data-plano="profissional"]');
+      if (btnPadrao) selecionar(btnPadrao);
+
+      // Alerta bonito no topo — some sozinho, ou fecha no X
+      var alerta = document.getElementById('alerta-plano');
+      var alertaTimer = null;
+      function mostrarAlertaPlano() {
+        if (!alerta) return;
+        clearTimeout(alertaTimer);
+        alerta.classList.remove('opacity-0', '-translate-y-6', 'pointer-events-none');
+        alerta.classList.add('opacity-100', 'translate-y-0');
+        alertaTimer = setTimeout(esconderAlertaPlano, 4200);
+      }
+      function esconderAlertaPlano() {
+        if (!alerta) return;
+        clearTimeout(alertaTimer);
+        alerta.classList.remove('opacity-100', 'translate-y-0');
+        alerta.classList.add('opacity-0', '-translate-y-6', 'pointer-events-none');
+      }
+      var alertaFechar = document.getElementById('alerta-plano-fechar');
+      if (alertaFechar) alertaFechar.addEventListener('click', esconderAlertaPlano);
+
+      ctaFinal.addEventListener('click', function (e) {
+        if (!planoSelecionado) {
+          e.preventDefault();
+          e.stopImmediatePropagation(); // impede o scroll-suave (que trata href="#" vazio como "ir pro topo")
+          mostrarAlertaPlano();
+        }
+      });
+    })();
+
+    // VSL — clique no play inicia o vídeo e assume os controles nativos; badge de duração usa a duração real do vídeo
+    (function () {
+      var video = document.getElementById('vslVideo');
+      var playBtn = document.getElementById('vslPlayBtn');
+      var badge = document.getElementById('vslBadge');
+      if (!video || !playBtn) return;
+
+      video.addEventListener('loadedmetadata', function () {
+        if (badge && isFinite(video.duration) && video.duration > 0) {
+          var min = Math.round(video.duration / 60);
+          badge.textContent = min + ' min';
+        }
+      });
+
+      playBtn.addEventListener('click', function () {
+        video.controls = true;
+        video.play();
+        playBtn.style.display = 'none';
+      });
+
+      video.addEventListener('pause', function () {
+        if (video.currentTime > 0 && !video.ended) playBtn.style.display = '';
+      });
+      video.addEventListener('play', function () { playBtn.style.display = 'none'; });
+      video.addEventListener('ended', function () { playBtn.style.display = ''; video.controls = false; });
+    })();
+
+    // Scroll suave customizado pros links internos — mais lento e controlado que o padrão do navegador
+    (function () {
+      const DURATION = 900;
+      const OFFSET = 96;
+      function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+      function smoothScrollTo(targetY) {
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+        const startTime = performance.now();
+        function step() {
+          const progress = Math.min((performance.now() - startTime) / DURATION, 1);
+          window.scrollTo(0, startY + distance * easeInOutCubic(progress));
+          if (progress < 1) setTimeout(step, 16);
+        }
+        step();
+      }
+      document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          const id = this.getAttribute('href').slice(1);
+          if (!id) {
+            e.preventDefault();
+            smoothScrollTo(0);
+            history.pushState(null, '', window.location.pathname);
+            return;
+          }
+          const target = document.getElementById(id);
+          if (!target) return;
+          e.preventDefault();
+          const y = Math.max(target.getBoundingClientRect().top + window.scrollY - OFFSET, 0);
+          smoothScrollTo(y);
+          history.pushState(null, '', '#' + id);
+        });
+      });
+    })();
+  </script>
+
+
+<!-- ==== SELETOR DE FONTE (TEMPORÁRIO — remover depois de escolher) ==== -->
+<div id="fontswitch" style="position:fixed;right:14px;bottom:14px;z-index:9999;background:#14161C;border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:10px 12px;box-shadow:0 10px 40px rgba(0,0,0,.5);font-family:system-ui,sans-serif">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+    <span style="color:#8b8f99;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase">Fonte</span>
+    <button onclick="document.getElementById('fontswitch').remove()" style="background:none;border:none;color:#6b7280;font-size:15px;line-height:1;cursor:pointer;padding:0 2px">&times;</button>
+  </div>
+  <div id="fontbtns" style="display:flex;flex-direction:column;gap:5px;max-height:60vh;overflow-y:auto"></div>
+</div>
+<script>
+(function(){
+  var fontes = [
+    ['Geist',              "'Geist'"],
+    ['Inter Tight',        "'Inter Tight'"],
+    ['Plus Jakarta Sans',  "'Plus Jakarta Sans'"],
+    ['Satoshi',            "'Satoshi'"],
+    ['Manrope',            "'Manrope'"],
+    ['Sora',               "'Sora'"],
+    ['Outfit',             "'Outfit'"],
+    ['DM Sans',            "'DM Sans'"],
+    ['General Sans',       "'General Sans'"],
+    ['Hubot Sans (atual)', "'Hubot Sans'"]
+  ];
+  var box = document.getElementById('fontbtns');
+  var atual = localStorage.getItem('ph-fonte') || "'Geist'";
+  document.documentElement.style.setProperty('--fonte', atual);
+
+  fontes.forEach(function(f){
+    var b = document.createElement('button');
+    b.textContent = f[0];
+    b.dataset.val = f[1];
+    b.style.cssText = 'text-align:left;cursor:pointer;border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:600;border:1px solid transparent;transition:.15s;font-family:'+f[1]+',system-ui,sans-serif';
+    b.onclick = function(){
+      document.documentElement.style.setProperty('--fonte', f[1]);
+      localStorage.setItem('ph-fonte', f[1]);
+      pinta();
+    };
+    box.appendChild(b);
+  });
+
+  function pinta(){
+    var v = getComputedStyle(document.documentElement).getPropertyValue('--fonte').trim();
+    [].forEach.call(box.children, function(b){
+      var on = b.dataset.val === v;
+      b.style.background   = on ? '#E2312A' : 'rgba(255,255,255,.06)';
+      b.style.color        = on ? '#fff'    : '#c9ccd2';
+      b.style.borderColor  = on ? '#E2312A' : 'rgba(255,255,255,.1)';
+    });
+  }
+  pinta();
+})();
+</script>
+
+</body>
+</html>

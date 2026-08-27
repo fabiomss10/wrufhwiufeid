@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VSL Express — PersonalHub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#E2312A',
+          'primary-light': '#E5403E',
+          background: '#0d0f10',
+          foreground: '#14161C',
+          border: '#2a2d33',
+        },
+      },
+    },
+  }
+</script>
+</head>
+<body class="bg-background text-white/85 font-sans antialiased">
+
+  <div class="max-w-3xl mx-auto px-6 py-16">
+
+    <p class="text-xs font-bold text-primary-light uppercase tracking-widest">Roteiro escrito pelo Jon Benson — modelo VSL Express do mentor</p>
+    <h1 class="mt-3 text-3xl font-bold text-white">VSL — PersonalHub</h1>
+    <p class="mt-2 text-white/50">Estrutura de 5 partes, 3 minutos, ~145 palavras/min. Baseado no estudo de persona, na PUV e na landing page — nenhum número aqui é novo, todos já aparecem na página.</p>
+
+    <div class="mt-6 bg-white/5 border border-border rounded-2xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-left text-white/40 uppercase text-xs border-b border-border">
+            <th class="px-4 py-3">Parte</th>
+            <th class="px-4 py-3">Tempo</th>
+            <th class="px-4 py-3 text-right">Palavras</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          <tr><td class="px-4 py-2.5">1 · Fazer parar</td><td class="px-4 py-2.5 text-white/50">0:00–0:20</td><td class="px-4 py-2.5 text-right">45</td></tr>
+          <tr><td class="px-4 py-2.5">2 · Mostrar que você conhece</td><td class="px-4 py-2.5 text-white/50">0:20–0:45</td><td class="px-4 py-2.5 text-right">76</td></tr>
+          <tr><td class="px-4 py-2.5">3 · Fazer a conta doer</td><td class="px-4 py-2.5 text-white/50">0:45–1:20</td><td class="px-4 py-2.5 text-right">79</td></tr>
+          <tr><td class="px-4 py-2.5">4 · Mostrar funcionando</td><td class="px-4 py-2.5 text-white/50">1:20–2:15</td><td class="px-4 py-2.5 text-right">98</td></tr>
+          <tr><td class="px-4 py-2.5">5 · Dar a escolha</td><td class="px-4 py-2.5 text-white/50">2:15–3:00</td><td class="px-4 py-2.5 text-right">81</td></tr>
+          <tr class="bg-white/5 font-semibold"><td class="px-4 py-2.5">Total</td><td class="px-4 py-2.5">3:00</td><td class="px-4 py-2.5 text-right">379</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="mt-10 border-border">
+
+    <!-- PARTE 1 -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-black bg-primary-light rounded-full px-2.5 py-1">0:00 – 0:20</span>
+        <h2 class="text-lg font-bold text-white">1. Fazer parar</h2>
+        <span class="ml-auto text-xs text-white/30">45 palavras</span>
+      </div>
+      <div class="mt-3 bg-white/5 border-l-2 border-primary-light rounded-r-xl p-4 leading-relaxed">
+        <p>Você já perdeu aluno sem nem saber por quê.</p>
+        <p class="mt-2">Para de rolar a tela por três segundos e responde:</p>
+        <p class="mt-2 font-semibold text-white">quanto você já perdeu esse mês só de aluno que sumiu?</p>
+        <p class="mt-2">Não é pergunta retórica.</p>
+        <p class="mt-2">Eu vou te mostrar a conta — e depois como ela desaparece.</p>
+      </div>
+      <p class="mt-2 text-xs text-white/30 italic">[VISUAL: tela preta, texto aparecendo palavra por palavra, sem música]</p>
+    </section>
+
+    <!-- PARTE 2 -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-black bg-primary-light rounded-full px-2.5 py-1">0:20 – 0:45</span>
+        <h2 class="text-lg font-bold text-white">2. Mostrar que você conhece</h2>
+        <span class="ml-auto text-xs text-white/30">76 palavras</span>
+      </div>
+      <div class="mt-3 bg-white/5 border-l-2 border-primary-light rounded-r-xl p-4 leading-relaxed">
+        <p>Eu sei exatamente como é.</p>
+        <p class="mt-2">Aluno atrasa. Você vê a notificação, pensa em cobrar, e decide esperar mais um dia.</p>
+        <p class="mt-2">Manda mensagem no seu WhatsApp pessoal — o mesmo onde sua mãe te chama pro almoço.</p>
+        <p class="mt-2">Ela vê e não responde.</p>
+        <p class="mt-2">Fim do mês: você abre a planilha que só atualiza quando lembra, e não sabe, ao certo, quanto realmente entrou.</p>
+        <p class="mt-2">Isso não é ser personal.</p>
+        <p class="mt-2">É ser cobrador de aluno sem nem ter assinado pra isso.</p>
+      </div>
+      <p class="mt-2 text-xs text-white/30 italic">[VISUAL: mockup de conversa de WhatsApp pessoal, cobrança perdida no meio de mensagens do dia a dia]</p>
+    </section>
+
+    <!-- PARTE 3 -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-black bg-primary-light rounded-full px-2.5 py-1">0:45 – 1:20</span>
+        <h2 class="text-lg font-bold text-white">3. Fazer a conta doer</h2>
+        <span class="ml-auto text-xs text-white/30">79 palavras</span>
+      </div>
+      <div class="mt-3 bg-white/5 border-l-2 border-primary-light rounded-r-xl p-4 leading-relaxed">
+        <p>Faz a conta comigo.</p>
+        <p class="mt-2">Um aluno que some são <strong class="text-primary-light">cento e cinquenta reais</strong> a menos, por mês.</p>
+        <p class="mt-2">Em três meses, <strong class="text-primary-light">quatrocentos e cinquenta</strong>.</p>
+        <p class="mt-2">Até dezembro, <strong class="text-primary-light">mil e quinhentos reais</strong> que não entraram — porque ele sumiu em março, e você só percebeu quando a vaga já tinha esfriado.</p>
+        <p class="mt-2">E tem a parte que não vem em número nenhum:</p>
+        <p class="mt-2">foi aquele aluno que parou de responder, sem avisar, sem brigar — só sumiu.</p>
+        <p class="mt-2">Isso não aparece no extrato.</p>
+        <p class="mt-2">Por isso ninguém corrige.</p>
+      </div>
+      <p class="mt-2 text-xs text-white/30 italic">[VISUAL: mesma cena da calculadora "quanto você está perdendo" da landing page]</p>
+      <p class="mt-1 text-xs text-white/20">Origem do número: R$150/mês por aluno inadimplente ou que some, já citado na landing page (calculadora e seção "A conta real").</p>
+    </section>
+
+    <!-- PARTE 4 -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-black bg-primary-light rounded-full px-2.5 py-1">1:20 – 2:15</span>
+        <h2 class="text-lg font-bold text-white">4. Mostrar funcionando</h2>
+        <span class="ml-auto text-xs text-white/30">98 palavras</span>
+      </div>
+      <div class="mt-3 bg-white/5 border-l-2 border-primary-light rounded-r-xl p-4 leading-relaxed">
+        <p>O <strong class="text-white">Piloto Automático do Personal</strong> resolve isso de um jeito específico.</p>
+        <p class="mt-2">Ele cobra, avisa e organiza — sozinho, todo mês.</p>
+        <p class="mt-2">Olha.</p>
+        <p class="mt-1 text-white/40 italic">(entra a gravação de tela, sem corte)</p>
+        <p class="mt-2">Você cadastra o aluno.</p>
+        <p class="mt-2">Ativa a cobrança: Pix ou cartão, recorrente.</p>
+        <p class="mt-2">Pronto.</p>
+        <p class="mt-2">Foram <strong class="text-primary-light">menos de trinta minutos</strong>, uma vez só.</p>
+        <p class="mt-2">Daqui pra frente, todo dia cinco, a cobrança cai sozinha.</p>
+        <p class="mt-2">O painel mostra quem pagou, quem está pendente, quem sumiu.</p>
+        <p class="mt-2">Se um aluno some, o alerta chega antes da vaga esfriar.</p>
+        <p class="mt-2">Sem você abrir o WhatsApp.</p>
+        <p class="mt-2">Não tem planilha. Não tem mensagem de cobrança. Não tem esperar o aluno lembrar.</p>
+        <p class="mt-2">É a mesma gestão — sem a parte manual.</p>
+      </div>
+      <p class="mt-2 text-xs text-white/30 italic">[VISUAL: gravação de tela real — cadastro de aluno, toggle Pix recorrente, painel financeiro com "quem falta pagar", alerta de aluno sumindo]</p>
+      <p class="mt-1 text-xs text-white/20">Origem dos números: "menos de 30 minutos" e "todo dia 5" já aparecem nos mockups da landing page.</p>
+    </section>
+
+    <!-- PARTE 5 -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-bold text-black bg-primary-light rounded-full px-2.5 py-1">2:15 – 3:00</span>
+        <h2 class="text-lg font-bold text-white">5. Dar a escolha</h2>
+        <span class="ml-auto text-xs text-white/30">81 palavras</span>
+      </div>
+      <div class="mt-3 bg-white/5 border-l-2 border-primary-light rounded-r-xl p-4 leading-relaxed">
+        <p>Daqui você tem três caminhos.</p>
+        <p class="mt-2"><strong class="text-white">Um:</strong> continuar. Aluno some, você só descobre depois, e o mês fecha menor do que devia.</p>
+        <p class="mt-2"><strong class="text-white">Dois:</strong> resolver sozinho. Planilha nova, lembrete no celular, força de vontade.</p>
+        <p class="mt-2">Você já tentou. Não durou.</p>
+        <p class="mt-2"><strong class="text-white">Três:</strong> ativar o Piloto Automático do Personal, e ver a cobrança rodando sozinha ainda hoje.</p>
+        <p class="mt-2"><strong class="text-primary-light">Sessenta e sete reais e noventa centavos por mês.</strong> Sem fidelidade. Cancela quando quiser.</p>
+        <p class="mt-2">Você já sabe a conta que fez comigo há um minuto.</p>
+        <p class="mt-2 font-semibold text-white">Cadastre seu primeiro aluno.</p>
+      </div>
+      <p class="mt-2 text-xs text-white/30 italic">[VISUAL: botão único "Quero receber em dia sem cobrar no WhatsApp" — só aparece agora, não antes]</p>
+      <p class="mt-1 text-xs text-white/20">Origem: R$67,90/mês, sem fidelidade — preço real do plano único na landing page.</p>
+    </section>
+
+    <hr class="mt-10 border-border">
+
+    <div class="mt-6 bg-primary/10 border border-primary-light/30 rounded-xl p-4 text-sm text-white/70">
+      <p><strong class="text-primary-light">Nota de produção:</strong> gravar com legenda embutida no próprio vídeo (burned-in) — sete em cada dez pessoas assistem sem som na primeira vez, conforme a regra do mentor.</p>
+    </div>
+
+  </div>
+
+</body>
+</html>

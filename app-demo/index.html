@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PersonalHub — Exemplo do app</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: '#E2312A',
+          'primary-light': '#E5403E',
+          'primary-dark': '#882828',
+          background: '#F7F3F3',
+          foreground: '#14161C',
+        },
+      },
+    },
+  }
+</script>
+<style>
+  body{ font-family: -apple-system, "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif; }
+  .screen{ display:none; }
+  .screen.active{ display:block; animation: telaEntrada .28s ease; }
+  @keyframes telaEntrada{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
+  .navbtn{ transition: all .2s ease; }
+  .navbtn:active{ transform: scale(.94); }
+  .linha-lista{ cursor:pointer; transition: background-color .15s ease; }
+  .linha-lista:active{ background-color: rgba(255,255,255,.05); }
+  [data-open-sheet]{ cursor:pointer; }
+  .filtro-chip{ transition: all .15s ease; cursor:pointer; }
+  .acao-item{ transition: background-color .15s ease, border-color .15s ease; cursor:pointer; }
+  .acao-item:active{ background-color: rgba(255,255,255,.07); border-color: rgba(255,255,255,.16); }
+  .btn-voltar{ cursor:pointer; transition: opacity .15s ease; }
+  .btn-voltar:active{ opacity:.55; }
+  input::placeholder{ color: rgba(255,255,255,.35); }
+  .no-scrollbar::-webkit-scrollbar{ display:none; }
+  .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+  .picker-item{ scroll-snap-align:center; height:36px; display:flex; align-items:center; justify-content:center; transition: color .15s ease, font-size .15s ease; }
+  .picker-col{ cursor:grab; user-select:none; touch-action:none; }
+  .picker-col.arrastando{ cursor:grabbing; }
+  #btnAdicionar:active{ transform: translateX(-50%) scale(.92); }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+  <div class="min-h-screen flex items-center justify-center py-10">
+    <!-- ===== Moldura de celular ===== -->
+    <div class="relative w-full max-w-[380px] mx-auto bg-[#17181d] border-[10px] border-[#0c0d10] rounded-[3rem] shadow-2xl shadow-black/40 overflow-hidden">
+
+      <!-- Dynamic island -->
+      <div class="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-[22px] bg-black rounded-full z-20"></div>
+
+      <!-- Status bar -->
+      <div class="relative flex items-center justify-between px-7 pt-4 pb-2 text-white/80">
+        <span class="text-[15px] font-semibold tracking-tight">9:41</span>
+        <div class="flex items-center gap-2">
+          <svg class="w-[18px] h-[13px]" viewBox="0 0 20 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="0.5"/><rect x="5" y="5" width="3" height="7" rx="0.5"/><rect x="10" y="2" width="3" height="10" rx="0.5"/><rect x="15" y="0" width="3" height="12" rx="0.5"/></svg>
+          <svg class="w-[18px] h-[13px]" viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6a14 14 0 0120 0"/><path d="M5.5 9.5a9 9 0 0113 0"/><path d="M9 13a4 4 0 016 0"/></svg>
+          <svg class="w-[26px] h-[15px]" viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="0.7" y="0.7" width="21" height="12.6" rx="3"/><rect x="2.3" y="2.3" width="14" height="9.4" rx="1.6" fill="currentColor" stroke="none"/><rect x="23" y="4.5" width="2.3" height="5" rx="1" fill="currentColor" stroke="none"/></svg>
+        </div>
+      </div>
+
+      <!-- Cabeçalho do app -->
+      <div class="relative flex items-center justify-between px-6 pt-2 pb-3 border-b border-white/[0.05]">
+        <div class="flex items-center gap-2">
+          <img src="icone-ph.png" alt="" class="w-6 h-6 rounded-md shadow-sm shadow-black/40">
+          <span class="text-white/70 text-[15px] font-normal">Personal Hub</span>
+        </div>
+        <span data-open-sheet role="button" tabindex="0" aria-label="Notificações" data-title="Notificações" data-desc="Aqui aparecem seus alertas — pagamentos recebidos, alunos sumindo e lembretes do dia." class="relative w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-white/50">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary-light"></span>
+        </span>
+      </div>
+
+      <!-- ===================== TELA: INÍCIO ===================== -->
+      <div class="screen active" data-screen="inicio">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+
+          <div class="relative bg-gradient-to-b from-white/[0.05] to-white/[0.015] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+            <div class="absolute -top-10 -right-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative flex items-center justify-between">
+              <p class="text-white/50 text-xs">Recebidos</p>
+              <span id="badgeVariacao" class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                <svg id="setaVariacao" class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>
+                <span id="valorVariacao">12%</span>
+              </span>
+            </div>
+            <p class="relative mt-1.5 text-white text-[27px] font-normal leading-none tracking-tight">R$ <span id="valorRecebido">4.320</span><span id="periodoLabel" class="text-white/40 text-sm font-normal"> este mês</span></p>
+
+            <div class="relative mt-3.5 flex items-center gap-1 bg-black/25 rounded-full p-0.5">
+              <button data-periodo="mes" class="periodo-btn flex-1 text-center text-[10px] font-semibold py-1.5 rounded-full bg-primary text-white shadow-sm shadow-primary/40">Este mês</button>
+              <button data-periodo="escolher" class="periodo-btn flex-1 text-center text-[10px] font-semibold py-1.5 rounded-full text-white/40">Selecionar mês</button>
+            </div>
+
+            <div class="relative mt-3.5 flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 text-[10px] font-medium text-white/45">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5403E"></span>Recebido
+              </span>
+              <span class="inline-flex items-center gap-1.5 text-[10px] font-medium text-white/45 ml-auto">
+                <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#c98500"></span>Pendente · <span id="valorPendente" class="text-white/75 font-semibold">R$ 890</span>
+              </span>
+            </div>
+
+            <div class="relative mt-1.5 -mx-1">
+              <svg viewBox="0 0 280 68" class="w-full h-[56px]" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="gradHome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#E5403E" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#E5403E" stop-opacity="0"/>
+                  </linearGradient>
+                  <linearGradient id="gradPendente" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c98500" stop-opacity="0.35"/>
+                    <stop offset="100%" stop-color="#c98500" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="17" x2="280" y2="17" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="34" x2="280" y2="34" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="51" x2="280" y2="51" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <path id="path-pendente-area" d="M0,58 C18,50 32,46 48,50 C64,54 76,60 92,54 C108,48 122,42 140,46 C158,50 170,58 188,54 C206,50 218,44 236,46 C254,48 266,52 280,48 L280,68 L0,68 Z" fill="url(#gradPendente)"/>
+                <path id="path-pendente-linha" d="M0,58 C18,50 32,46 48,50 C64,54 76,60 92,54 C108,48 122,42 140,46 C158,50 170,58 188,54 C206,50 218,44 236,46 C254,48 266,52 280,48" fill="none" stroke="#c98500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path id="path-recebido-area" d="M0,48 C18,26 32,18 48,26 C64,34 76,44 92,32 C108,20 122,10 140,18 C158,26 170,38 188,30 C206,22 218,10 236,16 C254,22 266,30 280,20 L280,68 L0,68 Z" fill="url(#gradHome)"/>
+                <path id="path-recebido-linha" d="M0,48 C18,26 32,18 48,26 C64,34 76,44 92,32 C108,20 122,10 140,18 C158,26 170,38 188,30 C206,22 218,10 236,16 C254,22 266,30 280,20" fill="none" stroke="#E5403E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle id="circ-pendente-fundo" cx="280" cy="48" r="5" fill="#17181d"/>
+                <circle id="circ-pendente-ponto" cx="280" cy="48" r="3" fill="#c98500"/>
+                <circle id="circ-recebido-fundo" cx="280" cy="20" r="5" fill="#17181d"/>
+                <circle id="circ-recebido-ponto" cx="280" cy="20" r="3" fill="#E5403E"/>
+              </svg>
+            </div>
+            <div class="relative flex items-center justify-between text-[9px] text-white/30 font-semibold">
+              <span>1</span><span>8</span><span>15</span><span>22</span><span>30</span>
+            </div>
+          </div>
+
+          <p class="mt-4 text-white text-sm font-semibold">Relatório do mês</p>
+
+          <div class="mt-2.5 space-y-2.5">
+            <div data-open-metrica="alunos-ativos" role="button" tabindex="0" aria-label="Alunos ativos" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Alunos ativos</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">6</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>2
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+
+            <div data-open-metrica="novos-alunos" role="button" tabindex="0" aria-label="Novos alunos" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h4a4 4 0 013.87 3"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Novos alunos</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">2</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>1
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+
+            <div data-open-metrica="sessoes" role="button" tabindex="0" aria-label="Sessões no mês" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Sessões no mês</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">24</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>6
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+
+            <div data-open-metrica="presenca" role="button" tabindex="0" aria-label="Presença" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/><path d="M8.5 14.5l2 2 4-4"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Presença</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">92%</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>4pp
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+
+            <div data-open-metrica="ticket-medio" role="button" tabindex="0" aria-label="Ticket médio" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Ticket médio</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">R$ 86</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-amber-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>2
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+
+            <div data-open-metrica="retencao" role="button" tabindex="0" aria-label="Retenção" class="relative overflow-hidden linha-lista flex items-center gap-3.5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white/55 text-xs">Retenção</p>
+                <p class="text-white text-2xl font-semibold leading-none mt-1 tracking-tight">94%</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="inline-flex items-center gap-0.5 text-emerald-400 text-[11px] font-bold">
+                  <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>1pp
+                </p>
+                <p class="text-white/30 text-[9px] mt-1">vs julho</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: ALUNOS ===================== -->
+      <div class="screen" data-screen="alunos">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <p class="text-white text-lg font-semibold">Alunos</p>
+
+          <div class="mt-3 flex items-center gap-2">
+            <button id="btnAdicionarAluno" class="flex-1 inline-flex items-center justify-center gap-1.5 bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12.5px] font-semibold py-2.5 rounded-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar
+            </button>
+            <button id="btnImportarIA" class="flex-1 inline-flex items-center justify-center gap-1.5 bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/10 text-white/80 text-[12.5px] font-semibold py-2.5 rounded-2xl">
+              <svg class="w-3.5 h-3.5 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z"/></svg>
+              Importar com IA
+            </button>
+          </div>
+
+          <div class="relative mt-3 flex items-center gap-2 bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-full px-3.5 py-2.5">
+            <svg class="w-4 h-4 text-white/40 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="buscaAluno" type="text" placeholder="Buscar aluno..." class="bg-transparent border-0 outline-none text-white placeholder-white/30 text-[13px] flex-1 min-w-0">
+          </div>
+
+          <div class="mt-3 flex items-center gap-2 overflow-hidden">
+            <button data-filtro="todos" class="filtro-chip active shrink-0 text-[11px] font-semibold text-white bg-gradient-to-br from-primary-light to-primary-dark px-3.5 py-1.5 rounded-full shadow-[0_4px_10px_-2px_rgba(226,49,42,.45)]">Todos · 8</button>
+            <button data-filtro="em-dia" class="filtro-chip shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/65 bg-white/[0.04] border border-white/10 px-3.5 py-1.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Em dia</button>
+            <button data-filtro="pendente" class="filtro-chip shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/65 bg-white/[0.04] border border-white/10 px-3.5 py-1.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Pendente</button>
+          </div>
+
+          <div id="listaAlunos" class="mt-3 space-y-2.5">
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="João Pedro" data-status="em-dia">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">JP<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">João Pedro</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 2 dias</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Próxima cobrança em 28 dias</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="João Pedro" aria-label="Treino — João Pedro" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="João Pedro" aria-label="Evolução — João Pedro" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="João Pedro" aria-label="Pagamento — João Pedro" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="Camila Rocha" data-status="em-dia">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">CR<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">Camila Rocha</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 5 dias</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Próxima cobrança em 12 dias</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="Camila Rocha" aria-label="Treino — Camila Rocha" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="Camila Rocha" aria-label="Evolução — Camila Rocha" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="Camila Rocha" aria-label="Pagamento — Camila Rocha" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="Marcos Alves" data-status="pendente">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">MA<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">Marcos Alves</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 9 dias</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-amber-400/80 text-[10.5px] font-medium"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Cobrança pendente</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="Marcos Alves" aria-label="Treino — Marcos Alves" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="Marcos Alves" aria-label="Evolução — Marcos Alves" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="Marcos Alves" aria-label="Pagamento — Marcos Alves" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="Beatriz Santos" data-status="em-dia">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">BS<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">Beatriz Santos</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado hoje</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Próxima cobrança em 30 dias</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="Beatriz Santos" aria-label="Treino — Beatriz Santos" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="Beatriz Santos" aria-label="Evolução — Beatriz Santos" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="Beatriz Santos" aria-label="Pagamento — Beatriz Santos" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="Diego Martins" data-status="pendente">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">DM<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-amber-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">Diego Martins</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 4 dias</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-amber-400/80 text-[10.5px] font-medium"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Cobrança vence amanhã</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="Diego Martins" aria-label="Treino — Diego Martins" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="Diego Martins" aria-label="Evolução — Diego Martins" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="Diego Martins" aria-label="Pagamento — Diego Martins" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5" data-nome="Larissa Freitas" data-status="em-dia">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 rounded-full">Ativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold ring-2 ring-white/[0.06] shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">LF<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-[#17181d]"></span></span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white text-[13.5px] font-semibold truncate">Larissa Freitas</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado ontem</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/40 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Próxima cobrança em 27 dias</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-treino="Larissa Freitas" aria-label="Treino — Larissa Freitas" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Treino</span>
+                </button>
+                <button data-open-evolucao="Larissa Freitas" aria-label="Evolução — Larissa Freitas" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Evolução</span>
+                </button>
+                <button data-open-pagamento="Larissa Freitas" aria-label="Pagamento — Larissa Freitas" class="flex flex-col items-center gap-1 border border-white/15 rounded-xl py-2 text-primary-light">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/65">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3.5 opacity-70" data-nome="Rodrigo Lima" data-status="inativo">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-white/45 bg-white/[0.06] border border-white/10 px-2 py-0.5 rounded-full">Inativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white/50 text-[12px] font-bold ring-2 ring-white/[0.06]">RL</span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white/70 text-[13.5px] font-semibold truncate">Rodrigo Lima</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/30 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 2 meses</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/30 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Encerrou o plano em junho</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-aluno="Rodrigo Lima" aria-label="Treino — Rodrigo Lima" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Treino</span>
+                </button>
+                <button data-open-aluno="Rodrigo Lima" aria-label="Evolução — Rodrigo Lima" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Evolução</span>
+                </button>
+                <button data-open-aluno="Rodrigo Lima" aria-label="Pagamento — Rodrigo Lima" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Pagamento</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="aluno-row relative overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-3.5 opacity-70" data-nome="Fernanda Costa" data-status="inativo">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              <span class="absolute top-3.5 right-3.5 text-[9px] font-bold text-white/45 bg-white/[0.06] border border-white/10 px-2 py-0.5 rounded-full">Inativo</span>
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white/50 text-[12px] font-bold ring-2 ring-white/[0.06]">FC</span>
+                <div class="leading-tight min-w-0 flex-1 pr-14">
+                  <p class="text-white/70 text-[13.5px] font-semibold truncate">Fernanda Costa</p>
+                  <p class="mt-1 flex items-center gap-1 text-white/30 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>Treino atualizado há 3 meses</p>
+                  <p class="mt-0.5 flex items-center gap-1 text-white/30 text-[10.5px]"><svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/></svg>Encerrou o plano em maio</p>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-1.5">
+                <button data-open-aluno="Fernanda Costa" aria-label="Treino — Fernanda Costa" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Treino</span>
+                </button>
+                <button data-open-aluno="Fernanda Costa" aria-label="Evolução — Fernanda Costa" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Evolução</span>
+                </button>
+                <button data-open-aluno="Fernanda Costa" aria-label="Pagamento — Fernanda Costa" class="flex flex-col items-center gap-1 border border-white/10 rounded-xl py-2 text-white/35">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  <span class="text-[9px] font-semibold text-white/40">Pagamento</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <p id="semResultado" class="hidden mt-6 text-center text-white/30 text-sm">Nenhum aluno encontrado.</p>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: FINANCEIRO ===================== -->
+      <div class="screen" data-screen="financeiro">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <p class="text-white text-lg font-semibold">Financeiro</p>
+
+          <div class="relative mt-3 bg-gradient-to-b from-white/[0.05] to-white/[0.015] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+            <div class="absolute -top-10 -left-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+              <p class="text-white/50 text-xs">Receita — últimos 6 meses</p>
+              <span class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>
+                12% vs julho
+              </span>
+            </div>
+            <p class="relative mt-1.5 text-white text-[24px] font-normal leading-none tracking-tight">R$ 24.680</p>
+
+            <div class="relative mt-3.5 -mx-1">
+              <svg viewBox="0 0 280 68" class="w-full h-[56px]" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="gradFinanceiro" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#E5403E" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#E5403E" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="17" x2="280" y2="17" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="34" x2="280" y2="34" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="51" x2="280" y2="51" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <path id="path-financeiro-area" fill="url(#gradFinanceiro)" stroke="none"/>
+                <path id="path-financeiro-linha" fill="none" stroke="#E5403E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle id="circ-financeiro-fundo" r="5" fill="#17181d"/>
+                <circle id="circ-financeiro-ponto" r="3" fill="#E5403E"/>
+              </svg>
+              <div id="receitaMeses" class="relative flex items-center justify-between -mt-1">
+                <button data-mes="Março" data-valor="R$ 3.700" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-white/25 font-semibold">MAR</button>
+                <button data-mes="Abril" data-valor="R$ 4.450" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-white/25 font-semibold">ABR</button>
+                <button data-mes="Maio" data-valor="R$ 3.850" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-white/25 font-semibold">MAI</button>
+                <button data-mes="Junho" data-valor="R$ 4.500" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-white/25 font-semibold">JUN</button>
+                <button data-mes="Julho" data-valor="R$ 3.860" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-white/25 font-semibold">JUL</button>
+                <button data-mes="Agosto" data-valor="R$ 4.320" class="linha-lista rounded-md px-1 py-0.5 text-[8px] text-primary-light font-bold">AGO</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div data-open-sheet role="button" tabindex="0" aria-label="Recebido" data-title="Recebido" data-desc="Total já confirmado esse mês — R$ 3.150 de 6 alunos em dia." class="linha-lista relative overflow-hidden bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl px-2.5 py-3 text-center">
+              <div class="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative mx-auto w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(16,185,129,.55)]">
+                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>
+              </span>
+              <p class="relative mt-2 text-emerald-400 text-sm font-bold">R$ 3.150</p>
+              <p class="relative text-white/40 text-[10px] mt-0.5">Recebido</p>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Pendente" data-title="Pendente" data-desc="Cobranças ainda dentro do prazo, aguardando pagamento." class="linha-lista relative overflow-hidden bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl px-2.5 py-3 text-center">
+              <div class="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative mx-auto w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-amber-500 shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(245,158,11,.55)]">
+                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+              </span>
+              <p class="relative mt-2 text-amber-400 text-sm font-bold">R$ 890</p>
+              <p class="relative text-white/40 text-[10px] mt-0.5">Pendente</p>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Em atraso" data-title="Em atraso" data-desc="Cobranças que já passaram do vencimento — o alerta de aluno sumindo entra em ação aqui." class="linha-lista relative overflow-hidden bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl px-2.5 py-3 text-center">
+              <div class="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative mx-auto w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.55)]">
+                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 17h.01"/></svg>
+              </span>
+              <p class="relative mt-2 text-primary-light text-sm font-bold">R$ 280</p>
+              <p class="relative text-white/40 text-[10px] mt-0.5">Em atraso</p>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden mt-4 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+            <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+            <p class="relative text-white/50 text-xs">Formas de pagamento</p>
+            <div class="relative mt-2.5 flex h-2.5 rounded-full overflow-hidden bg-white/[0.06]">
+              <span class="h-full bg-gradient-to-r from-primary-dark to-primary-light" style="width:67%"></span>
+              <span class="h-full bg-gradient-to-r from-amber-500 to-amber-400" style="width:33%"></span>
+            </div>
+            <div class="relative mt-2.5 flex items-center gap-4 text-[11px]">
+              <span class="inline-flex items-center gap-1.5 text-white/60"><span class="w-1.5 h-1.5 rounded-full bg-primary-light shrink-0"></span>Pix · 67% <span class="text-white/30">R$ 2.816</span></span>
+              <span class="inline-flex items-center gap-1.5 text-white/60"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>Cartão · 33% <span class="text-white/30">R$ 1.387</span></span>
+            </div>
+          </div>
+
+          <p class="mt-4 text-white text-sm font-semibold">Precisa de atenção</p>
+          <div class="mt-2.5 space-y-2">
+            <div class="relative overflow-hidden flex items-center gap-3 bg-amber-400/[0.06] border border-amber-400/20 rounded-2xl p-3">
+              <span class="w-9 h-9 shrink-0 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-[11px] font-bold">MA</span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white text-[13px] font-medium truncate">Marcos Alves</p>
+                <p class="text-amber-400/90 text-[11px] mt-0.5">R$ 89,90 · pendente há 3 dias</p>
+              </div>
+              <button data-lembrar="Marcos Alves" class="shrink-0 text-[11px] font-bold text-amber-400 bg-amber-400/10 px-3 py-1.5 rounded-full">Lembrar</button>
+            </div>
+            <div class="relative overflow-hidden flex items-center gap-3 bg-primary/[0.06] border border-primary-light/20 rounded-2xl p-3">
+              <span class="w-9 h-9 shrink-0 rounded-full bg-white/10 text-white/70 flex items-center justify-center text-[11px] font-bold">DM</span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white text-[13px] font-medium truncate">Diego Martins</p>
+                <p class="text-primary-light text-[11px] mt-0.5">R$ 89,90 · vence amanhã</p>
+              </div>
+              <button data-lembrar="Diego Martins" class="shrink-0 text-[11px] font-bold text-primary-light bg-primary/15 px-3 py-1.5 rounded-full">Lembrar</button>
+            </div>
+          </div>
+
+          <p class="mt-4 text-white text-sm font-semibold">Últimas cobranças</p>
+          <div class="mt-2.5 space-y-2">
+            <div data-open-sheet role="button" tabindex="0" aria-label="Cobrança — João Pedro" data-title="Cobrança — João Pedro" data-desc="Pix de R$ 89,90 recebido hoje. Recibo disponível pra download." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[11px] font-bold flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">JP</span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium truncate">João Pedro</p>
+                <p class="text-white/40 text-[11px] mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12l3.5-3.5a2 2 0 012.8 0L17 12l-3.7 3.5a2 2 0 01-2.8 0z"/><path d="M4 9.5V8a2 2 0 012-2h1.5"/><path d="M20 14.5V16a2 2 0 01-2 2h-1.5"/></svg>
+                  Pix · hoje
+                </p>
+              </div>
+              <span class="relative inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full shrink-0">Pago</span>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Cobrança — Marcos Alves" data-title="Cobrança — Marcos Alves" data-desc="Cartão de R$ 89,90, vence em 3 dias. O aluno já foi notificado automaticamente." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-9 h-9 shrink-0 rounded-full bg-white/10 text-white/70 text-[11px] font-bold flex items-center justify-center">MA</span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium truncate">Marcos Alves</p>
+                <p class="text-white/40 text-[11px] mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  Cartão · vence em 3 dias
+                </p>
+              </div>
+              <span class="relative inline-flex items-center gap-1 text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-2 py-1 rounded-full shrink-0">Pendente</span>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Cobrança — Beatriz Santos" data-title="Cobrança — Beatriz Santos" data-desc="Pix de R$ 89,90 recebido ontem. Recibo disponível pra download." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[11px] font-bold flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">BS</span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium truncate">Beatriz Santos</p>
+                <p class="text-white/40 text-[11px] mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12l3.5-3.5a2 2 0 012.8 0L17 12l-3.7 3.5a2 2 0 01-2.8 0z"/><path d="M4 9.5V8a2 2 0 012-2h1.5"/><path d="M20 14.5V16a2 2 0 01-2 2h-1.5"/></svg>
+                  Pix · ontem
+                </p>
+              </div>
+              <span class="relative inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full shrink-0">Pago</span>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Cobrança — Larissa Freitas" data-title="Cobrança — Larissa Freitas" data-desc="Pix de R$ 89,90 recebido há 3 dias. Recibo disponível pra download." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[11px] font-bold flex items-center justify-center shadow-[inset_0_1px_1px_rgba(255,255,255,.25)]">LF</span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium truncate">Larissa Freitas</p>
+                <p class="text-white/40 text-[11px] mt-0.5 flex items-center gap-1">
+                  <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 12l3.5-3.5a2 2 0 012.8 0L17 12l-3.7 3.5a2 2 0 01-2.8 0z"/><path d="M4 9.5V8a2 2 0 012-2h1.5"/><path d="M20 14.5V16a2 2 0 01-2 2h-1.5"/></svg>
+                  Pix · há 3 dias
+                </p>
+              </div>
+              <span class="relative inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full shrink-0">Pago</span>
+            </div>
+          </div>
+
+          <button id="btnExportarFinanceiro" class="mt-3 mb-1 w-full inline-flex items-center justify-center gap-2 text-[12.5px] font-semibold text-white/80 bg-white/[0.04] border border-white/15 rounded-2xl py-2.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7,10 12,15 17,10"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Exportar relatório do mês
+          </button>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: PERFIL ===================== -->
+      <div class="screen" data-screen="perfil">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <p class="text-white text-lg font-semibold">Perfil</p>
+
+          <div class="relative mt-3 bg-gradient-to-b from-white/[0.05] to-white/[0.015] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+            <div class="absolute -top-10 -right-8 w-28 h-28 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Editar perfil" data-title="Editar perfil" data-desc="Atualize seus dados, foto e informações de contato." class="linha-lista relative flex items-center gap-3 -m-1 p-1 rounded-2xl">
+              <span class="relative w-16 h-16 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-xl font-bold ring-2 ring-white/[0.08] shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_10px_20px_-6px_rgba(226,49,42,.55)]">
+                RS
+                <span class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#17181d] flex items-center justify-center border-2 border-[#17181d]">
+                  <span class="w-full h-full rounded-full bg-white/[0.12] flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+                  </span>
+                </span>
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-white font-semibold truncate">Rafael Souza</p>
+                <p class="text-white/40 text-[12px] truncate">Personal trainer · 18 alunos ativos</p>
+                <span class="inline-block mt-1 text-[10px] font-bold text-primary-light bg-primary/15 px-2 py-0.5 rounded-full">Plano Profissional</span>
+              </div>
+            </div>
+            <div class="relative mt-4 grid grid-cols-3 gap-2">
+              <div class="bg-black/20 rounded-xl p-2 text-center">
+                <p class="text-white text-[15px] font-bold leading-none">18</p>
+                <p class="text-white/40 text-[9px] mt-1.5">Alunos</p>
+              </div>
+              <div class="bg-black/20 rounded-xl p-2 text-center">
+                <p class="text-white text-[15px] font-bold leading-none">R$ 4.320</p>
+                <p class="text-white/40 text-[9px] mt-1.5">Este mês</p>
+              </div>
+              <div class="bg-black/20 rounded-xl p-2 text-center">
+                <p class="text-white text-[15px] font-bold leading-none">92%</p>
+                <p class="text-white/40 text-[9px] mt-1.5">Presença</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden mt-4 bg-gradient-to-br from-primary/[0.1] to-primary/[0.02] border border-primary-light/20 rounded-2xl p-3.5">
+            <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-primary-light/25 to-transparent"></div>
+            <div class="absolute -top-8 -right-6 w-24 h-24 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative flex items-center gap-2.5">
+              <span class="w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.55)]">
+                <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07l-1.42 1.41"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07l1.41-1.41"/></svg>
+              </span>
+              <div class="min-w-0">
+                <p class="text-white text-[13px] font-semibold">Seu link de cadastro</p>
+                <p class="text-white/45 text-[10.5px] mt-0.5 leading-snug">O aluno preenche os dados e já entra no seu painel</p>
+              </div>
+            </div>
+            <div class="relative mt-3 flex items-center gap-2 bg-black/25 border border-white/[0.06] rounded-xl pl-3 pr-1.5 py-1.5">
+              <svg class="w-3.5 h-3.5 text-white/30 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l2.83-2.83a5 5 0 00-7.07-7.07l-1.42 1.41"/><path d="M14 11a5 5 0 00-7.07 0L4.1 13.83a5 5 0 007.07 7.07l1.41-1.41"/></svg>
+              <p class="flex-1 min-w-0 truncate text-white/70 text-[11.5px] font-medium">personalhub.app/rafael-souza</p>
+              <button id="btnCopiarLink" class="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-gradient-to-br from-primary-light to-primary-dark px-3 py-2 rounded-lg shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.5)]">
+                <svg id="iconeCopiarLink" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                <span id="textoCopiarLink">Copiar</span>
+              </button>
+            </div>
+            <button data-open-sheet role="button" tabindex="0" aria-label="Ver QR code" data-title="QR code do cadastro" data-desc="Mostre esse código na tela pro aluno escanear com a câmera do celular e abrir seu link de cadastro na hora." class="linha-lista relative mt-2.5 inline-flex items-center gap-1.5 text-primary-light text-[11px] font-semibold">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><line x1="14" y1="14" x2="14" y2="21"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="17.5" y1="17.5" x2="17.5" y2="17.51"/><line x1="21" y1="21" x2="21" y2="21.01"/><line x1="17.5" y1="21" x2="17.5" y2="21.01"/></svg>
+              Ver QR code pra mostrar ao aluno
+            </button>
+          </div>
+
+          <p class="mt-4 text-white/40 text-[11px] font-bold uppercase tracking-widest">Conta</p>
+          <div class="mt-2 space-y-2">
+            <div data-open-sheet role="button" tabindex="0" aria-label="Editar perfil" data-title="Editar perfil" data-desc="Atualize seus dados, foto e informações de contato." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium">Editar perfil</p>
+                <p class="text-white/35 text-[10.5px] mt-0.5">Nome, foto e informações de contato</p>
+              </div>
+              <svg class="relative w-3.5 h-3.5 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Notificações" data-title="Notificações" data-desc="Escolha como e quando quer ser avisado sobre pagamentos e alunos." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a5 5 0 00-5 5v3.5L5 15h14l-2-3.5V8a5 5 0 00-5-5z"/><path d="M9.5 18a2.5 2.5 0 005 0"/></svg>
+              </span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium">Notificações</p>
+                <p class="text-white/35 text-[10.5px] mt-0.5">Cobranças, alunos e lembretes</p>
+              </div>
+              <svg class="relative w-3.5 h-3.5 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Métodos de cobrança" data-title="Métodos de cobrança" data-desc="Configure Pix e cartão pra receber automaticamente dos seus alunos." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium">Métodos de cobrança</p>
+                <p class="text-white/35 text-[10.5px] mt-0.5">Pix e cartão configurados</p>
+              </div>
+              <svg class="relative w-3.5 h-3.5 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </div>
+            <div data-open-sheet role="button" tabindex="0" aria-label="Ajuda" data-title="Ajuda" data-desc="Central de ajuda e suporte direto com o time PersonalHub." class="linha-lista relative overflow-hidden flex items-center gap-3 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3.5">
+              <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+              <span class="relative w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_6px_14px_-4px_rgba(226,49,42,.5)]">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2 2-2 3.5"/><line x1="12" y1="16.5" x2="12" y2="16.5"/></svg>
+              </span>
+              <div class="relative min-w-0 flex-1">
+                <p class="text-white text-sm font-medium">Ajuda</p>
+                <p class="text-white/35 text-[10.5px] mt-0.5">Suporte direto com o time PersonalHub</p>
+              </div>
+              <svg class="relative w-3.5 h-3.5 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </div>
+          </div>
+
+          <button id="sairConta" class="linha-lista mt-4 w-full flex items-center justify-center gap-2 text-sm font-semibold text-primary-light py-3 rounded-2xl bg-primary/[0.05] border border-primary-light/20">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sair da conta
+          </button>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: DETALHE (genérica — notificações, treino, faturas, financeiro, perfil, ações) ===================== -->
+      <div class="screen" data-screen="detalhe">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-hidden">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+          <p id="detalheTitulo" class="mt-5 text-white text-xl font-semibold"></p>
+          <p id="detalheDesc" class="mt-2.5 text-white/50 text-sm leading-relaxed"></p>
+          <div class="mt-6 flex gap-2.5">
+            <button id="detalheCancelar" class="hidden flex-1 text-center text-sm font-semibold text-white/70 py-3 rounded-2xl border border-white/15">Cancelar</button>
+            <button id="detalheOk" class="flex-1 text-center text-sm font-semibold text-white py-3 rounded-2xl bg-gradient-to-r from-primary-light to-primary-dark shadow-sm shadow-primary/30">Entendi</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: MÉTRICA DO RELATÓRIO ===================== -->
+      <div class="screen" data-screen="metrica">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+
+          <div class="mt-5 flex items-center gap-3">
+            <span id="metricaIcone" class="relative w-12 h-12 shrink-0 flex items-center justify-center rounded-2xl bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.3),0_8px_16px_-4px_rgba(226,49,42,.5)]"></span>
+            <div class="min-w-0">
+              <p id="metricaTitulo" class="text-white text-[15px] font-semibold leading-tight"></p>
+              <p id="metricaPeriodo" class="text-white/35 text-[11px] mt-0.5"></p>
+            </div>
+          </div>
+
+          <div class="mt-5 flex items-end justify-between gap-3">
+            <p id="metricaValor" class="text-white text-[36px] font-bold leading-none tracking-tight"></p>
+            <p id="metricaDelta" class="inline-flex items-center gap-1 text-[12px] font-bold rounded-full px-2.5 py-1 mb-1"></p>
+          </div>
+          <p class="text-white/30 text-[11px] mt-1.5">comparado ao mês anterior</p>
+
+          <div class="relative overflow-hidden mt-5 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-4">
+            <div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+            <p class="text-white/40 text-[10.5px] font-semibold uppercase tracking-wide">Últimos 6 meses</p>
+            <div id="metricaGrafico" class="mt-3.5 flex items-end justify-between gap-2 h-16"></div>
+            <div id="metricaMeses" class="flex items-center justify-between gap-2 mt-2"></div>
+          </div>
+
+          <p class="mt-5 text-white/40 text-[10.5px] font-semibold uppercase tracking-wide">Detalhes</p>
+          <div id="metricaContexto" class="relative overflow-hidden mt-2 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl divide-y divide-white/[0.06]"></div>
+
+          <div class="relative overflow-hidden mt-4 bg-primary/[0.07] border border-primary-light/20 rounded-2xl p-3.5 flex gap-2.5">
+            <svg class="w-4 h-4 shrink-0 mt-0.5 text-primary-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.75c.5.4.8 1 .8 1.75v.5h6.4v-.5c0-.75.3-1.35.8-1.75A7 7 0 0012 2z"/></svg>
+            <p id="metricaInsight" class="text-white/60 text-[12px] leading-relaxed"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: SELECIONAR MÊS ===================== -->
+      <div class="screen" data-screen="mes">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-hidden">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+          <p class="mt-5 text-white text-xl font-semibold text-center">Selecionar mês</p>
+          <p class="mt-1.5 text-white/45 text-xs text-center">Arraste pra escolher o mês e o ano.</p>
+          <div class="relative h-[180px] mt-6 flex items-center justify-center gap-4">
+            <div class="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#17181d] to-transparent z-10"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#17181d] to-transparent z-10"></div>
+            <div class="pointer-events-none absolute inset-x-6 top-1/2 -translate-y-1/2 h-9 rounded-xl bg-primary-light/10 border-y border-primary-light/40 z-10"></div>
+            <div id="colMes" class="picker-col no-scrollbar relative overflow-y-scroll snap-y snap-mandatory h-full w-28 text-center"></div>
+            <div id="colAno" class="picker-col no-scrollbar relative overflow-y-scroll snap-y snap-mandatory h-full w-20 text-center"></div>
+          </div>
+          <button id="confirmarMesBtn" class="mt-6 w-full text-center text-sm font-semibold text-white py-3 rounded-2xl bg-gradient-to-r from-primary-light to-primary-dark shadow-sm shadow-primary/30">Confirmar</button>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: DETALHE DO ALUNO ===================== -->
+      <div class="screen" data-screen="aluno">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-hidden">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5" data-voltar="alunos">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+
+          <div class="flex items-center gap-3 mt-5">
+            <span id="telaAlunoAvatar" class="relative w-12 h-12 shrink-0 flex items-center justify-center rounded-full text-white text-base font-bold ring-2 ring-white/[0.08]"></span>
+            <div class="min-w-0">
+              <p id="telaAlunoNome" class="text-white text-lg font-semibold truncate"></p>
+              <p id="telaAlunoSub" class="text-white/40 text-xs truncate"></p>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-2.5 max-h-[380px] overflow-y-auto no-scrollbar">
+            <div id="cardTreinoResumo" role="button" tabindex="0" aria-label="Ver treino completo" class="linha-lista bg-white/[0.04] border border-white/10 rounded-2xl p-3.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5 text-white/45 text-[10px] font-bold uppercase tracking-widest">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/></svg>
+                  Treino
+                </div>
+                <svg id="setaTreinoResumo" class="hidden w-3.5 h-3.5 text-white/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+              </div>
+              <p id="telaAlunoTreino" class="mt-1.5 text-white/85 text-sm leading-relaxed"></p>
+              <p id="dicaTreinoResumo" class="hidden mt-1.5 text-primary-light text-[11px] font-semibold">Ver treino completo</p>
+            </div>
+            <div id="cardEvolucaoResumo" role="button" tabindex="0" aria-label="Ver evolução completa" class="linha-lista bg-white/[0.04] border border-white/10 rounded-2xl p-3.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5 text-white/45 text-[10px] font-bold uppercase tracking-widest">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3,17 9,11 13,15 21,7"/><polyline points="14,7 21,7 21,14"/></svg>
+                  Evolução
+                </div>
+                <svg id="setaEvolucaoResumo" class="hidden w-3.5 h-3.5 text-white/25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+              </div>
+              <p id="telaAlunoEvolucao" class="mt-1.5 text-white/85 text-sm leading-relaxed"></p>
+              <p id="dicaEvolucaoResumo" class="hidden mt-1.5 text-primary-light text-[11px] font-semibold">Ver evolução completa</p>
+            </div>
+            <div id="cardPagamentoResumo" role="button" tabindex="0" aria-label="Ver histórico de pagamento" class="linha-lista bg-white/[0.04] border border-white/10 rounded-2xl p-3.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5 text-white/45 text-[10px] font-bold uppercase tracking-widest">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+                  Pagamento
+                </div>
+                <span id="telaAlunoStatusPag" class="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"></span>
+              </div>
+              <p id="telaAlunoPagamento" class="mt-1.5 text-white/85 text-sm leading-relaxed"></p>
+              <p id="dicaPagamentoResumo" class="hidden mt-1.5 text-primary-light text-[11px] font-semibold">Ver histórico completo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: HISTÓRICO DE PAGAMENTO ===================== -->
+      <div class="screen" data-screen="pagamento">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5" data-voltar="alunos">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+
+          <div class="mt-5 flex items-center gap-3">
+            <span id="pagamentoAvatar" class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08]"></span>
+            <div class="min-w-0 flex-1">
+              <p id="pagamentoNome" class="text-white text-[15px] font-semibold truncate"></p>
+              <p id="pagamentoDesde" class="text-white/40 text-[11px] mt-0.5"></p>
+            </div>
+          </div>
+
+          <div class="relative mt-4 bg-gradient-to-b from-white/[0.05] to-white/[0.015] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+            <div class="absolute -top-10 -right-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+              <p class="text-white/50 text-xs">Mensalidade</p>
+              <span id="pagamentoStatusBadge" class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"></span>
+            </div>
+            <p id="pagamentoValorMensal" class="relative mt-1.5 text-white text-[27px] font-normal leading-none tracking-tight"></p>
+            <p id="pagamentoProxima" class="relative mt-1.5 text-white/45 text-[11.5px]"></p>
+            <div class="relative mt-3.5 grid grid-cols-2 gap-2">
+              <div class="bg-black/20 rounded-2xl p-2.5 text-center">
+                <p id="pagamentoPontualidade" class="text-white text-[17px] font-semibold leading-none"></p>
+                <p class="mt-1 text-white/40 text-[9.5px]">Pontualidade</p>
+              </div>
+              <div class="bg-black/20 rounded-2xl p-2.5 text-center">
+                <p id="pagamentoTotalRecebido" class="text-white text-[17px] font-semibold leading-none"></p>
+                <p class="mt-1 text-white/40 text-[9.5px]">Recebido no período</p>
+              </div>
+            </div>
+            <div class="relative mt-3.5">
+              <p class="text-white/35 text-[9px] font-semibold uppercase tracking-wide">Pulso dos últimos meses</p>
+              <div id="pagamentoPulso" class="mt-2 flex items-end gap-1.5 h-6"></div>
+            </div>
+          </div>
+
+          <p class="mt-5 text-white text-sm font-semibold">Histórico de pagamentos</p>
+          <div id="pagamentoHistorico" class="relative mt-3"></div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: TREINO DO ALUNO ===================== -->
+      <div class="screen" data-screen="treino">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5" data-voltar="alunos">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+
+          <div class="mt-5 flex items-center gap-3">
+            <span id="treinoAvatar" class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08]"></span>
+            <div class="min-w-0 flex-1">
+              <p id="treinoNome" class="text-white text-[15px] font-semibold truncate"></p>
+              <p id="treinoDivisao" class="text-white/40 text-[11px] mt-0.5"></p>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden mt-4 bg-gradient-to-br from-primary/[0.12] to-primary/[0.02] border border-primary-light/20 rounded-2xl p-3.5">
+            <div class="absolute -top-10 -right-8 w-28 h-28 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+            <p class="relative text-primary-light text-[10px] font-bold uppercase tracking-wide">Objetivo</p>
+            <p id="treinoObjetivo" class="relative mt-1 text-white text-[14px] font-semibold"></p>
+            <p id="treinoObjetivoDesc" class="relative mt-1 text-white/50 text-[11.5px] leading-relaxed"></p>
+            <div id="treinoStats" class="relative mt-3.5 grid grid-cols-3 gap-2"></div>
+          </div>
+
+          <div id="treinoDias" class="mt-4 space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: EVOLUÇÃO DO ALUNO ===================== -->
+      <div class="screen" data-screen="evolucao">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-y-auto no-scrollbar">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5" data-voltar="alunos">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+
+          <div class="mt-5 flex items-center gap-3">
+            <span id="evolucaoAvatar" class="relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08]"></span>
+            <div class="min-w-0 flex-1">
+              <p id="evolucaoNome" class="text-white text-[15px] font-semibold truncate"></p>
+              <p id="evolucaoDesde" class="text-white/40 text-[11px] mt-0.5"></p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex items-center gap-1.5 -mx-6 px-6">
+            <button id="chipsSetaEsq" class="hidden shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.09] border border-white/10 text-white/70" aria-label="Rolar pra esquerda">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            </button>
+            <div class="relative min-w-0 flex-1">
+              <div id="evolucaoChips" class="flex items-center gap-2 overflow-x-auto no-scrollbar cursor-grab">
+                <button data-metrica="massa" class="evo-chip active shrink-0 text-[11px] font-semibold text-white bg-gradient-to-br from-primary-light to-primary-dark px-3.5 py-1.5 rounded-full shadow-[0_4px_10px_-2px_rgba(226,49,42,.45)]">Massa muscular</button>
+                <button data-metrica="peso" class="evo-chip shrink-0 text-[11px] font-semibold text-white/65 bg-white/[0.04] border border-white/10 px-3.5 py-1.5 rounded-full">Peso</button>
+                <button data-metrica="gordura" class="evo-chip shrink-0 text-[11px] font-semibold text-white/65 bg-white/[0.04] border border-white/10 px-3.5 py-1.5 rounded-full">% Gordura</button>
+                <button data-metrica="condicionamento" class="evo-chip shrink-0 text-[11px] font-semibold text-white/65 bg-white/[0.04] border border-white/10 px-3.5 py-1.5 rounded-full">Condicionamento</button>
+              </div>
+              <div id="chipsFadeEsq" class="hidden pointer-events-none absolute top-0 left-0 h-full w-6 bg-gradient-to-r from-[#17181d] to-transparent"></div>
+              <div id="chipsFadeDir" class="pointer-events-none absolute top-0 right-0 h-full w-6 bg-gradient-to-l from-[#17181d] to-transparent"></div>
+            </div>
+            <button id="chipsSetaDir" class="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.09] border border-white/10 text-white/70" aria-label="Rolar pra direita">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+          </div>
+
+          <div class="relative mt-3 bg-gradient-to-b from-white/[0.05] to-white/[0.015] border border-white/10 rounded-[20px] p-4 overflow-hidden">
+            <div class="absolute -top-10 -left-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="relative flex items-center justify-between">
+              <p id="evolucaoLabelAtual" class="text-white/50 text-xs"></p>
+              <span id="evolucaoDelta" class="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"></span>
+            </div>
+            <p id="evolucaoValorAtual" class="relative mt-1.5 text-white text-[27px] font-normal leading-none tracking-tight"></p>
+            <p id="evolucaoCriterio" class="hidden relative mt-1 text-white/30 text-[9px] leading-snug"></p>
+            <div class="relative mt-3.5 -mx-1">
+              <svg viewBox="0 0 280 68" class="w-full h-[56px]" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="gradEvolucao" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#E5403E" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="#E5403E" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="17" x2="280" y2="17" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="34" x2="280" y2="34" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <line x1="0" y1="51" x2="280" y2="51" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+                <path id="evolucaoArea" fill="url(#gradEvolucao)" stroke="none"/>
+                <path id="evolucaoLinha" fill="none" stroke="#E5403E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <g id="evolucaoPontos"></g>
+              </svg>
+            </div>
+            <div id="evolucaoLabelsX" class="relative flex items-center justify-between text-[9px] text-white/30 font-semibold"></div>
+          </div>
+
+          <button id="btnExportarGrafico" class="mt-3 w-full inline-flex items-center justify-center gap-2 text-[12.5px] font-semibold text-white/80 bg-white/[0.04] border border-white/15 rounded-2xl py-2.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7,10 12,15 17,10"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+            Exportar gráfico
+          </button>
+
+          <div class="mt-5 flex items-center justify-between">
+            <p class="text-white/40 text-[10.5px] font-semibold uppercase tracking-wide">Linha do tempo</p>
+            <button id="btnNovoRegistro" class="inline-flex items-center gap-1 text-primary-light text-[10.5px] font-bold">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Novo registro
+            </button>
+          </div>
+          <div id="evolucaoTimeline" class="mt-2 space-y-2.5"></div>
+        </div>
+      </div>
+
+      <!-- ===================== TELA: AÇÕES RÁPIDAS ===================== -->
+      <div class="screen" data-screen="acoes">
+        <div class="px-6 pt-3 pb-4 h-[560px] overflow-hidden">
+          <button class="btn-voltar flex items-center gap-1 text-white/55 text-sm font-medium -ml-1.5">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
+            Voltar
+          </button>
+          <p class="mt-5 text-white text-xl font-semibold">Adicionar</p>
+          <p class="mt-1.5 text-white/45 text-xs">Escolha o que você quer fazer agora.</p>
+
+          <div class="mt-5 space-y-2">
+            <button data-acao="cadastrar" class="acao-item w-full flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-left">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-primary/15 text-primary-light">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h4a4 4 0 013.87 3"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-white text-sm font-semibold">Cadastrar aluno</span>
+                <span class="block text-white/40 text-[11px] mt-0.5">Adicione um novo aluno manualmente</span>
+              </span>
+              <svg class="w-4 h-4 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+
+            <button data-acao="importar" class="acao-item w-full flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-left">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white/70">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-white text-sm font-semibold">Importar aluno(s)</span>
+                <span class="block text-white/40 text-[11px] mt-0.5">Traga sua lista de uma planilha</span>
+              </span>
+              <svg class="w-4 h-4 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+
+            <button data-acao="lembrete" class="acao-item w-full flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-left">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-white text-sm font-semibold">Enviar lembrete de cobrança</span>
+                <span class="block text-white/40 text-[11px] mt-0.5">Avisa quem está com pagamento pendente</span>
+              </span>
+              <svg class="w-4 h-4 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+
+            <button data-acao="link" class="acao-item w-full flex items-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl p-3 text-left">
+              <span class="w-10 h-10 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white/70">
+                <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.07 0l1.93-1.93a5 5 0 00-7.07-7.07L10.5 5.5"/><path d="M14 11a5 5 0 00-7.07 0L5 12.93a5 5 0 007.07 7.07L13.5 18.5"/></svg>
+              </span>
+              <span class="min-w-0 flex-1">
+                <span class="block text-white text-sm font-semibold">Gerar link de cadastro</span>
+                <span class="block text-white/40 text-[11px] mt-0.5">O aluno preenche os dados sozinho</span>
+              </span>
+              <svg class="w-4 h-4 text-white/25 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,6 15,12 9,18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navegação inferior -->
+      <div class="relative px-4 pb-4 pt-1">
+        <div class="flex items-center justify-around bg-white/[0.045] backdrop-blur-sm border border-white/10 rounded-full px-1.5 py-1 shadow-lg shadow-black/20">
+          <button data-nav="inicio" class="navbtn active flex flex-col items-center gap-1 px-3.5 py-1.5 rounded-full" style="background:linear-gradient(135deg, rgba(229,64,62,.24), rgba(229,64,62,.08)); box-shadow:0 2px 10px rgba(226,49,42,.25)">
+            <svg class="navicon w-4 h-4" style="color:#EF5B58; filter:drop-shadow(0 0 4px rgba(239,91,88,.5))" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5L12 5l8 6.5"/><path d="M6 10.5V19a1 1 0 001 1h3v-5h4v5h3a1 1 0 001-1v-8.5"/></svg>
+            <span class="navlabel text-[10px] font-semibold tracking-wide" style="color:#FF6B68">Início</span>
+          </button>
+          <button data-nav="alunos" class="navbtn flex flex-col items-center gap-1 px-3.5 py-1.5 rounded-full">
+            <svg class="navicon w-4 h-4 text-white/65" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            <span class="navlabel text-[10px] font-semibold tracking-wide text-white/80">Alunos</span>
+          </button>
+          <span class="w-9"></span>
+          <button data-nav="financeiro" class="navbtn flex flex-col items-center gap-1 px-3.5 py-1.5 rounded-full">
+            <svg class="navicon w-4 h-4 text-white/65" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="19" x2="6" y2="11"/><line x1="12" y1="19" x2="12" y2="6"/><line x1="18" y1="19" x2="18" y2="14"/></svg>
+            <span class="navlabel text-[10px] font-semibold tracking-wide text-white/80">Financeiro</span>
+          </button>
+          <button data-nav="perfil" class="navbtn flex flex-col items-center gap-1 px-3.5 py-1.5 rounded-full">
+            <svg class="navicon w-4 h-4 text-white/65" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0114 0"/></svg>
+            <span class="navlabel text-[10px] font-semibold tracking-wide text-white/80">Perfil</span>
+          </button>
+        </div>
+        <span id="btnAdicionar" class="absolute left-1/2 -translate-x-1/2 -top-0.5 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white shadow-[inset_0_1px_1px_rgba(255,255,255,.35),0_10px_20px_-4px_rgba(226,49,42,.55)] border-[3px] border-[#17181d] cursor-pointer transition-transform">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ---------- navegação entre telas ----------
+    function irPara(alvo) {
+      document.querySelectorAll('.screen').forEach(function (s) {
+        s.classList.toggle('active', s.dataset.screen === alvo);
+      });
+      document.querySelectorAll('.navbtn').forEach(function (b) {
+        var ativo = b.dataset.nav === alvo;
+        b.classList.toggle('active', ativo);
+        b.style.background = ativo ? 'linear-gradient(135deg, rgba(229,64,62,.24), rgba(229,64,62,.08))' : 'transparent';
+        b.style.boxShadow = ativo ? '0 2px 10px rgba(226,49,42,.25)' : 'none';
+        var icone = b.querySelector('.navicon');
+        icone.style.color = ativo ? '#EF5B58' : '';
+        icone.style.filter = ativo ? 'drop-shadow(0 0 4px rgba(239,91,88,.5))' : '';
+        icone.classList.toggle('text-white/65', !ativo);
+        b.querySelector('.navlabel').style.color = ativo ? '#FF6B68' : '';
+        b.querySelector('.navlabel').classList.toggle('text-white/80', !ativo);
+      });
+    }
+    document.querySelectorAll('.navbtn').forEach(function (btn) {
+      btn.addEventListener('click', function () { irPara(btn.dataset.nav); });
+    });
+    document.querySelectorAll('.btn-voltar').forEach(function (btn) {
+      btn.addEventListener('click', function () { irPara(btn.dataset.voltar || 'inicio'); });
+    });
+
+    // ---------- período (Este mês / Selecionar mês) ----------
+    document.querySelectorAll('.periodo-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.periodo-btn').forEach(function (b) {
+          b.classList.remove('bg-primary', 'text-white', 'shadow-sm', 'shadow-primary/40');
+          b.classList.add('text-white/40');
+        });
+        btn.classList.add('bg-primary', 'text-white', 'shadow-sm', 'shadow-primary/40');
+        btn.classList.remove('text-white/40');
+        if (btn.dataset.periodo === 'escolher') {
+          abrirTelaMes();
+        } else {
+          document.getElementById('periodoLabel').textContent = ' este mês';
+          document.querySelector('[data-periodo="escolher"]').textContent = 'Selecionar mês';
+          resetDadosMes();
+        }
+      });
+    });
+
+    // ---------- seletor de mês/ano (scroll picker, estilo iOS) ----------
+    var MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    var ANOS = ['2025', '2026', '2027'];
+    var ITEM_H = 36;
+    var MES_PADRAO = 7; // Agosto
+    var ANO_PADRAO = ANOS.indexOf('2026');
+
+    // ---------- dados do gráfico/valores por mês (gerados de forma determinística, pra parecer real) ----------
+    var PERFIL_PADRAO = {
+      recebido: "M0,48 C18,26 32,18 48,26 C64,34 76,44 92,32 C108,20 122,10 140,18 C158,26 170,38 188,30 C206,22 218,10 236,16 C254,22 266,30 280,20",
+      recebidoY: 20,
+      pendente: "M0,58 C18,50 32,46 48,50 C64,54 76,60 92,54 C108,48 122,42 140,46 C158,50 170,58 188,54 C206,50 218,44 236,46 C254,48 266,52 280,48",
+      pendenteY: 48
+    };
+    var PERFIS_GRAFICO = [
+      PERFIL_PADRAO,
+      { recebido: "M0,54 C18,40 32,22 48,20 C64,18 76,26 92,34 C108,42 122,36 140,24 C158,14 170,12 188,22 C206,30 218,34 236,26 C254,18 266,14 280,16", recebidoY: 16,
+        pendente: "M0,60 C18,54 32,48 48,50 C64,52 76,56 92,58 C108,56 122,52 140,48 C158,46 170,50 188,54 C206,52 218,50 236,46 C254,44 266,42 280,44", pendenteY: 44 },
+      { recebido: "M0,44 C18,50 32,56 48,52 C64,48 76,38 92,26 C108,16 122,14 140,20 C158,26 170,20 188,12 C206,8 218,12 236,18 C254,22 266,16 280,10", recebidoY: 10,
+        pendente: "M0,56 C18,58 32,60 48,58 C64,56 76,52 92,48 C108,46 122,48 140,50 C158,52 170,50 188,46 C206,44 218,46 236,48 C254,50 266,48 280,46", pendenteY: 46 },
+      { recebido: "M0,36 C18,30 32,28 48,32 C64,36 76,34 92,28 C108,24 122,26 140,30 C158,34 170,32 188,26 C206,22 218,24 236,28 C254,32 266,30 280,26", recebidoY: 26,
+        pendente: "M0,54 C18,52 32,50 48,52 C64,54 76,54 92,52 C108,50 122,50 140,52 C158,54 170,54 188,52 C206,50 218,50 236,52 C254,54 266,52 280,50", pendenteY: 50 }
+    ];
+
+    function hashTexto(s) {
+      var h = 5381;
+      for (var i = 0; i < s.length; i++) { h = ((h << 5) + h) + s.charCodeAt(i); h = h & h; }
+      return Math.abs(h);
+    }
+
+    function dadosDoMes(mes, ano) {
+      var h = hashTexto(mes + ano);
+      var perfil = PERFIS_GRAFICO[h % PERFIS_GRAFICO.length];
+      var r1 = (h % 997) / 997;
+      var r2 = (Math.floor(h / 7) % 991) / 991;
+      var r3 = (Math.floor(h / 13) % 983) / 983;
+      var total = Math.round((2800 + r1 * 3400) / 10) * 10;
+      var variacao = Math.round(-8 + r2 * 30);
+      var pendente = Math.round((350 + r3 * 1050) / 10) * 10;
+      return { perfil: perfil, total: total, variacao: variacao, pendente: pendente };
+    }
+
+    function formatarMoeda(v) {
+      return v.toLocaleString('pt-BR');
+    }
+
+    function aplicarGrafico(perfil) {
+      document.getElementById('path-recebido-area').setAttribute('d', perfil.recebido + ' L280,68 L0,68 Z');
+      document.getElementById('path-recebido-linha').setAttribute('d', perfil.recebido);
+      document.getElementById('path-pendente-area').setAttribute('d', perfil.pendente + ' L280,68 L0,68 Z');
+      document.getElementById('path-pendente-linha').setAttribute('d', perfil.pendente);
+      document.getElementById('circ-recebido-fundo').setAttribute('cy', perfil.recebidoY);
+      document.getElementById('circ-recebido-ponto').setAttribute('cy', perfil.recebidoY);
+      document.getElementById('circ-pendente-fundo').setAttribute('cy', perfil.pendenteY);
+      document.getElementById('circ-pendente-ponto').setAttribute('cy', perfil.pendenteY);
+    }
+
+    function aplicarVariacao(variacao) {
+      var badge = document.getElementById('badgeVariacao');
+      var seta = document.getElementById('setaVariacao');
+      var positivo = variacao >= 0;
+      document.getElementById('valorVariacao').textContent = Math.abs(variacao) + '%';
+      badge.classList.toggle('bg-emerald-500/15', positivo);
+      badge.classList.toggle('text-emerald-400', positivo);
+      badge.classList.toggle('bg-primary/15', !positivo);
+      badge.classList.toggle('text-primary-light', !positivo);
+      seta.classList.toggle('rotate-180', !positivo);
+    }
+
+    function aplicarDadosMes(mes, ano) {
+      var d = dadosDoMes(mes, ano);
+      document.getElementById('valorRecebido').textContent = formatarMoeda(d.total);
+      document.getElementById('valorPendente').textContent = 'R$ ' + formatarMoeda(d.pendente);
+      aplicarVariacao(d.variacao);
+      aplicarGrafico(d.perfil);
+    }
+
+    function resetDadosMes() {
+      document.getElementById('valorRecebido').textContent = '4.320';
+      document.getElementById('valorPendente').textContent = 'R$ 890';
+      aplicarVariacao(12);
+      aplicarGrafico(PERFIL_PADRAO);
+    }
+
+    function montarColuna(el, valores) {
+      var html = '<div style="height:' + (ITEM_H * 2) + 'px"></div>';
+      valores.forEach(function (v) {
+        html += '<div class="picker-item snap-center text-white/30 text-base" data-valor="' + v + '">' + v + '</div>';
+      });
+      html += '<div style="height:' + (ITEM_H * 2) + 'px"></div>';
+      el.innerHTML = html;
+    }
+    montarColuna(document.getElementById('colMes'), MESES);
+    montarColuna(document.getElementById('colAno'), ANOS);
+
+    function habilitarArrasto(col) {
+      var arrastando = false;
+      var startY = 0;
+      var startScroll = 0;
+
+      col.addEventListener('pointerdown', function (e) {
+        arrastando = true;
+        startY = e.clientY;
+        startScroll = col.scrollTop;
+        col.setPointerCapture(e.pointerId);
+        col.style.scrollSnapType = 'none';
+        col.classList.add('arrastando');
+      });
+
+      col.addEventListener('pointermove', function (e) {
+        if (!arrastando) return;
+        var delta = e.clientY - startY;
+        col.scrollTop = startScroll - delta;
+        destacarCentro(col);
+      });
+
+      function soltar(e) {
+        if (!arrastando) return;
+        arrastando = false;
+        col.classList.remove('arrastando');
+        col.style.scrollSnapType = 'y mandatory';
+        var idx = Math.round(col.scrollTop / ITEM_H);
+        col.scrollTo({ top: idx * ITEM_H, behavior: 'smooth' });
+        setTimeout(function () { destacarCentro(col); }, 200);
+      }
+      col.addEventListener('pointerup', soltar);
+      col.addEventListener('pointerleave', soltar);
+      col.addEventListener('pointercancel', soltar);
+    }
+    habilitarArrasto(document.getElementById('colMes'));
+    habilitarArrasto(document.getElementById('colAno'));
+
+    function destacarCentro(col) {
+      var idx = Math.round(col.scrollTop / ITEM_H);
+      var itens = col.querySelectorAll('.picker-item');
+      itens.forEach(function (it, i) {
+        var ativo = i === idx;
+        it.classList.toggle('text-white', ativo);
+        it.classList.toggle('font-semibold', ativo);
+        it.classList.toggle('text-[19px]', ativo);
+        it.classList.toggle('text-white/30', !ativo);
+        it.classList.toggle('text-base', !ativo);
+      });
+      return itens[idx] ? itens[idx].dataset.valor : '';
+    }
+    ['colMes', 'colAno'].forEach(function (id) {
+      var col = document.getElementById(id);
+      var timer;
+      col.addEventListener('scroll', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () { destacarCentro(col); }, 80);
+      });
+    });
+
+    function abrirTelaMes() {
+      irPara('mes');
+      var colMes = document.getElementById('colMes');
+      var colAno = document.getElementById('colAno');
+      requestAnimationFrame(function () {
+        colMes.scrollTop = MES_PADRAO * ITEM_H;
+        colAno.scrollTop = ANO_PADRAO * ITEM_H;
+        destacarCentro(colMes);
+        destacarCentro(colAno);
+      });
+    }
+
+    document.getElementById('confirmarMesBtn').addEventListener('click', function () {
+      var mes = destacarCentro(document.getElementById('colMes'));
+      var ano = destacarCentro(document.getElementById('colAno'));
+      var abreviado = mes.slice(0, 3) + '/' + ano;
+      document.querySelector('[data-periodo="escolher"]').textContent = abreviado;
+      document.getElementById('periodoLabel').textContent = ' em ' + abreviado;
+      aplicarDadosMes(mes, ano);
+      irPara('inicio');
+    });
+
+    // ---------- busca + filtro de alunos ----------
+    var filtroAtivo = 'todos';
+    function aplicarFiltro() {
+      var termo = (document.getElementById('buscaAluno').value || '').trim().toLowerCase();
+      var linhas = document.querySelectorAll('#listaAlunos .aluno-row');
+      var visiveis = 0;
+      linhas.forEach(function (row) {
+        var nomeOk = row.dataset.nome.toLowerCase().indexOf(termo) !== -1;
+        var statusOk = filtroAtivo === 'todos' || row.dataset.status === filtroAtivo;
+        var mostrar = nomeOk && statusOk;
+        row.classList.toggle('hidden', !mostrar);
+        if (mostrar) visiveis++;
+      });
+      document.getElementById('semResultado').classList.toggle('hidden', visiveis !== 0);
+    }
+    document.getElementById('buscaAluno').addEventListener('input', aplicarFiltro);
+    document.querySelectorAll('.filtro-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        filtroAtivo = chip.dataset.filtro;
+        document.querySelectorAll('.filtro-chip').forEach(function (c) {
+          var ativo = c === chip;
+          c.classList.toggle('active', ativo);
+          c.classList.toggle('bg-gradient-to-br', ativo);
+          c.classList.toggle('from-primary-light', ativo);
+          c.classList.toggle('to-primary-dark', ativo);
+          c.classList.toggle('shadow-[0_4px_10px_-2px_rgba(226,49,42,.45)]', ativo);
+          c.classList.toggle('text-white', ativo);
+          c.classList.toggle('bg-white/[0.04]', !ativo);
+          c.classList.toggle('border', !ativo);
+          c.classList.toggle('border-white/10', !ativo);
+          c.classList.toggle('text-white/65', !ativo);
+        });
+        aplicarFiltro();
+      });
+    });
+
+    // ---------- tela de detalhe genérica ----------
+    function abrirDetalhe(titulo, desc, opts) {
+      opts = opts || {};
+      document.getElementById('detalheTitulo').textContent = titulo;
+      document.getElementById('detalheDesc').textContent = desc;
+      document.getElementById('detalheCancelar').classList.toggle('hidden', !opts.confirmar);
+      document.getElementById('detalheOk').textContent = opts.confirmar ? 'Sair' : 'Entendi';
+      irPara('detalhe');
+    }
+    document.getElementById('detalheCancelar').addEventListener('click', function () { irPara('inicio'); });
+    document.getElementById('detalheOk').addEventListener('click', function () { irPara('inicio'); });
+
+    document.querySelectorAll('[data-open-sheet]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirDetalhe(el.dataset.title, el.dataset.desc);
+      });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          abrirDetalhe(el.dataset.title, el.dataset.desc);
+        }
+      });
+    });
+
+    document.getElementById('sairConta').addEventListener('click', function () {
+      abrirDetalhe('Sair da conta?', 'Você pode entrar novamente quando quiser — seus dados continuam salvos.', { confirmar: true });
+    });
+
+    // ---------- tela de métrica do relatório do mês ----------
+    var METRICAS_DADOS = {
+      'alunos-ativos': {
+        titulo: 'Alunos ativos', valor: '6', delta: '+2', deltaPositivo: true,
+        icone: '<path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="3.5"/><path d="M22 20v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+        grafico: [4, 4, 5, 4, 5, 6],
+        contexto: [
+          { label: 'Novos alunos no mês', valor: '2' },
+          { label: 'Cancelamentos', valor: '0' },
+          { label: 'Crescimento no mês', valor: '+50%' }
+        ],
+        insight: 'Você tinha 4 alunos ativos em julho e fechou agosto com 6 — um crescimento de 50%, puxado pelos 2 alunos novos que chegaram.'
+      },
+      'novos-alunos': {
+        titulo: 'Novos alunos', valor: '2', delta: '+1', deltaPositivo: true,
+        icone: '<circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h4a4 4 0 013.87 3"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>',
+        grafico: [0, 1, 0, 2, 1, 2],
+        contexto: [
+          { label: 'Via indicação', valor: '1' },
+          { label: 'Via redes sociais', valor: '1' },
+          { label: 'Tempo até 1ª sessão', valor: '3 dias' }
+        ],
+        insight: '2 pessoas começaram a treinar com você em agosto, uma a mais que em julho — metade veio por indicação de aluno atual.'
+      },
+      'sessoes': {
+        titulo: 'Sessões no mês', valor: '24', delta: '+6', deltaPositivo: true,
+        icone: '<path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/>',
+        grafico: [14, 16, 15, 18, 18, 24],
+        contexto: [
+          { label: 'Média por aluno', valor: '4' },
+          { label: 'Tipo mais comum', valor: 'Musculação' },
+          { label: 'Dia mais cheio', valor: 'Terça' }
+        ],
+        insight: '24 treinos foram registrados esse mês, 6 a mais que em julho — uma média de 4 sessões por aluno ativo.'
+      },
+      'presenca': {
+        titulo: 'Presença', valor: '92%', delta: '+4pp', deltaPositivo: true,
+        icone: '<rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="3" y1="9.5" x2="21" y2="9.5"/><line x1="8" y1="2.5" x2="8" y2="6"/><line x1="16" y1="2.5" x2="16" y2="6"/><path d="M8.5 14.5l2 2 4-4"/>',
+        grafico: [84, 86, 85, 88, 88, 92],
+        contexto: [
+          { label: 'Faltas registradas', valor: '3' },
+          { label: 'Menor presença', valor: 'Marcos Alves' },
+          { label: 'Meta do mês', valor: '90%' }
+        ],
+        insight: '92% de presença nos treinos agendados, 4 pontos acima de julho. Marcos Alves é o único abaixo da média do grupo.'
+      },
+      'ticket-medio': {
+        titulo: 'Ticket médio', valor: 'R$ 86', delta: '-2', deltaPositivo: false,
+        icone: '<path d="M6 2h12a1 1 0 011 1v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3a1 1 0 011-1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/>',
+        grafico: [90, 89, 91, 88, 88, 86],
+        contexto: [
+          { label: 'Maior plano ativo', valor: 'R$ 120' },
+          { label: 'Menor plano ativo', valor: 'R$ 60' },
+          { label: 'Alunos no plano padrão', valor: '4' }
+        ],
+        insight: 'R$ 86,00 em média por aluno, R$ 2,00 abaixo de julho — reflexo do plano mais em conta de um dos alunos novos.'
+      },
+      'retencao': {
+        titulo: 'Retenção', valor: '94%', delta: '+1pp', deltaPositivo: true,
+        icone: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>',
+        grafico: [90, 91, 92, 93, 93, 94],
+        contexto: [
+          { label: 'Média do mercado', valor: '65%' },
+          { label: 'Alunos há +6 meses', valor: '4' },
+          { label: 'Cancelamentos no trimestre', valor: '0' }
+        ],
+        insight: '94% dos alunos que fecharam 3 meses com você continuam ativos — bem acima da média do mercado, entre 60% e 70%.'
+      }
+    };
+    var METRICA_MESES = ['Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago'];
+
+    function abrirMetrica(chave) {
+      var d = METRICAS_DADOS[chave];
+      if (!d) return;
+
+      document.getElementById('metricaIcone').innerHTML =
+        '<svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d.icone + '</svg>';
+      document.getElementById('metricaTitulo').textContent = d.titulo;
+      document.getElementById('metricaPeriodo').textContent = 'Relatório do mês · Agosto 2026';
+      document.getElementById('metricaValor').textContent = d.valor;
+
+      var deltaEl = document.getElementById('metricaDelta');
+      deltaEl.innerHTML = (d.deltaPositivo
+        ? '<svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>'
+        : '<svg class="w-2.5 h-2.5 rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>') +
+        d.delta;
+      deltaEl.className = 'inline-flex items-center gap-1 text-[12px] font-bold rounded-full px-2.5 py-1 mb-1 ' +
+        (d.deltaPositivo ? 'text-emerald-400 bg-emerald-400/10' : 'text-amber-400 bg-amber-400/10');
+
+      var max = Math.max.apply(null, d.grafico) || 1;
+      var graficoEl = document.getElementById('metricaGrafico');
+      graficoEl.innerHTML = '';
+      d.grafico.forEach(function (v, i) {
+        var ultimo = i === d.grafico.length - 1;
+        var pct = Math.max(10, Math.round((v / max) * 100));
+        var bar = document.createElement('div');
+        bar.className = 'flex-1 rounded-full transition-all ' + (ultimo ? 'bg-gradient-to-t from-primary-dark to-primary-light' : 'bg-white/10');
+        bar.style.height = pct + '%';
+        graficoEl.appendChild(bar);
+      });
+      document.getElementById('metricaMeses').innerHTML = METRICA_MESES.map(function (m, i) {
+        var ultimo = i === METRICA_MESES.length - 1;
+        return '<span class="flex-1 text-center text-[9px] ' + (ultimo ? 'text-primary-light font-bold' : 'text-white/30') + '">' + m + '</span>';
+      }).join('');
+
+      document.getElementById('metricaContexto').innerHTML = d.contexto.map(function (c) {
+        return '<div class="flex items-center justify-between px-4 py-3"><span class="text-white/50 text-[12.5px]">' + c.label + '</span><span class="text-white text-[13px] font-semibold">' + c.valor + '</span></div>';
+      }).join('');
+
+      document.getElementById('metricaInsight').textContent = d.insight;
+      irPara('metrica');
+    }
+
+    document.querySelectorAll('[data-open-metrica]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirMetrica(el.dataset.openMetrica);
+      });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          abrirMetrica(el.dataset.openMetrica);
+        }
+      });
+    });
+
+    // ---------- detalhe do aluno (treino + evolução + pagamento) ----------
+    var ALUNO_DADOS = {
+      'João Pedro': { iniciais: 'JP', gradiente: true, status: 'em-dia', fisico: '28 anos · 78kg · 1,75m',
+        treino: 'Treino B — Superior, atualizado há 2 dias. Próxima sessão: quinta-feira.',
+        evolucao: '+3kg de massa magra em 8 semanas · 92% de presença nos treinos.',
+        pagStatus: 'Pago', pagamento: 'Pix de R$ 89,90 recebido há 2 dias. Próxima cobrança em 28 dias.' },
+      'Camila Rocha': { iniciais: 'CR', gradiente: true, status: 'em-dia', fisico: '24 anos · 62kg · 1,68m',
+        treino: 'Treino A — Full body, atualizado há 5 dias. Próxima sessão: amanhã.',
+        evolucao: '-1,8% de gordura corporal em 6 semanas · 100% de presença.',
+        pagStatus: 'Pago', pagamento: 'Cartão de R$ 89,90 cobrado automaticamente. Próxima cobrança em 12 dias.' },
+      'Marcos Alves': { iniciais: 'MA', gradiente: false, status: 'pendente', fisico: '35 anos · 89kg · 1,80m',
+        treino: 'Treino C — Inferior, atualizado há 9 dias.',
+        evolucao: 'Sem registro de evolução nas últimas 2 semanas.',
+        pagStatus: 'Pendente', pagamento: 'Pagamento de R$ 89,90 em aberto. Lembrete automático já enviado.' },
+      'Beatriz Santos': { iniciais: 'BS', gradiente: true, status: 'em-dia', fisico: '31 anos · 65kg · 1,70m',
+        treino: 'Treino A — Full body, atualizado hoje.',
+        evolucao: '+5kg no supino em 2 meses · 88% de presença.',
+        pagStatus: 'Pago', pagamento: 'Pix de R$ 89,90 recebido ontem. Próxima cobrança em 30 dias.' },
+      'Diego Martins': { iniciais: 'DM', gradiente: false, status: 'pendente', fisico: '27 anos · 92kg · 1,78m',
+        treino: 'Treino B — Superior, atualizado há 4 dias.',
+        evolucao: 'Presença caiu pra 60% no último mês — vale um contato.',
+        pagStatus: 'Pendente', pagamento: 'Cartão de R$ 89,90 vence amanhã.' },
+      'Larissa Freitas': { iniciais: 'LF', gradiente: true, status: 'em-dia', fisico: '22 anos · 58kg · 1,63m',
+        treino: 'Treino D — Cardio + core, atualizado ontem.',
+        evolucao: '-3kg em 10 semanas · meta batida.',
+        pagStatus: 'Pago', pagamento: 'Pix de R$ 89,90 recebido há 3 dias. Próxima cobrança em 27 dias.' },
+      'Rodrigo Lima': { iniciais: 'RL', gradiente: false, status: 'inativo', fisico: '33 anos · 84kg · 1,79m',
+        treino: 'Treino B — Superior, última atualização há 2 meses.',
+        evolucao: 'Sem registros desde que o plano foi encerrado.',
+        pagStatus: 'Encerrado', pagamento: 'Assinatura cancelada pelo aluno em junho. Nenhuma cobrança ativa.' },
+      'Fernanda Costa': { iniciais: 'FC', gradiente: false, status: 'inativo', fisico: '29 anos · 61kg · 1,66m',
+        treino: 'Treino A — Full body, última atualização há 3 meses.',
+        evolucao: 'Sem registros desde que o plano foi encerrado.',
+        pagStatus: 'Encerrado', pagamento: 'Assinatura cancelada pelo aluno em maio. Nenhuma cobrança ativa.' }
+    };
+
+    function abrirTelaAluno(nome) {
+      var d = ALUNO_DADOS[nome];
+      if (!d) return;
+
+      var avatar = document.getElementById('telaAlunoAvatar');
+      avatar.textContent = d.iniciais;
+      avatar.className = 'relative w-12 h-12 shrink-0 flex items-center justify-center rounded-full text-base font-bold ring-2 ring-white/[0.08] ' +
+        (d.gradiente ? 'bg-gradient-to-br from-primary-light to-primary-dark text-white' : 'bg-white/10 text-white/70');
+
+      document.getElementById('telaAlunoNome').textContent = nome;
+      document.getElementById('telaAlunoSub').textContent = d.fisico;
+      document.getElementById('telaAlunoTreino').textContent = d.treino;
+      document.getElementById('telaAlunoEvolucao').textContent = d.evolucao;
+      document.getElementById('telaAlunoPagamento').textContent = d.pagamento;
+
+      var statusEl = document.getElementById('telaAlunoStatusPag');
+      statusEl.textContent = d.pagStatus;
+      statusEl.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ' +
+        (d.pagStatus === 'Pago' ? 'text-emerald-400 bg-emerald-400/10' :
+         d.pagStatus === 'Pendente' ? 'text-amber-400 bg-amber-400/10' : 'text-white/50 bg-white/[0.06]');
+
+      var temTreino = !!TREINO_DADOS[nome];
+      document.getElementById('cardTreinoResumo').dataset.temTreino = temTreino ? '1' : '';
+      document.getElementById('setaTreinoResumo').classList.toggle('hidden', !temTreino);
+      document.getElementById('dicaTreinoResumo').classList.toggle('hidden', !temTreino);
+
+      var temEvolucao = !!EVOLUCAO_DADOS[nome];
+      document.getElementById('cardEvolucaoResumo').dataset.temEvolucao = temEvolucao ? '1' : '';
+      document.getElementById('setaEvolucaoResumo').classList.toggle('hidden', !temEvolucao);
+      document.getElementById('dicaEvolucaoResumo').classList.toggle('hidden', !temEvolucao);
+
+      var temPagamento = !!PAGAMENTO_DADOS[nome];
+      document.getElementById('cardPagamentoResumo').dataset.temPagamento = temPagamento ? '1' : '';
+      document.getElementById('dicaPagamentoResumo').classList.toggle('hidden', !temPagamento);
+
+      alunoAtual = nome;
+
+      irPara('aluno');
+    }
+
+    document.querySelectorAll('[data-open-aluno]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirTelaAluno(btn.dataset.openAluno);
+      });
+    });
+
+    var alunoAtual = null;
+    var cardTreinoResumo = document.getElementById('cardTreinoResumo');
+    cardTreinoResumo.addEventListener('click', function () {
+      if (this.dataset.temTreino) abrirTelaTreino(alunoAtual);
+    });
+    cardTreinoResumo.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && this.dataset.temTreino) {
+        e.preventDefault();
+        abrirTelaTreino(alunoAtual);
+      }
+    });
+
+    var cardEvolucaoResumo = document.getElementById('cardEvolucaoResumo');
+    cardEvolucaoResumo.addEventListener('click', function () {
+      if (this.dataset.temEvolucao) abrirEvolucao(alunoAtual);
+    });
+    cardEvolucaoResumo.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && this.dataset.temEvolucao) {
+        e.preventDefault();
+        abrirEvolucao(alunoAtual);
+      }
+    });
+
+    var cardPagamentoResumo = document.getElementById('cardPagamentoResumo');
+    cardPagamentoResumo.addEventListener('click', function () {
+      if (this.dataset.temPagamento) abrirPagamento(alunoAtual);
+    });
+    cardPagamentoResumo.addEventListener('keydown', function (e) {
+      if ((e.key === 'Enter' || e.key === ' ') && this.dataset.temPagamento) {
+        e.preventDefault();
+        abrirPagamento(alunoAtual);
+      }
+    });
+
+    // ---------- treino do aluno (divisão, objetivo, exercícios por dia) ----------
+    var TREINO_DADOS = {
+      'João Pedro': {
+        divisao: 'Divisão ABC · 3x por semana',
+        objetivo: 'Hipertrofia',
+        objetivoDesc: 'Foco em ganho de massa muscular, com volume moderado a alto e cargas progressivas.',
+        dias: [
+          { letra: 'A', grupo: 'Peito, Ombro e Tríceps', exercicios: [
+            { nome: 'Supino reto com barra', series: 4, reps: '8-10', descanso: '90s' },
+            { nome: 'Desenvolvimento com halteres', series: 3, reps: '10-12', descanso: '60s' },
+            { nome: 'Tríceps corda', series: 3, reps: '12-15', descanso: '45s' }
+          ]},
+          { letra: 'B', grupo: 'Costas e Bíceps', exercicios: [
+            { nome: 'Puxada frontal', series: 4, reps: '8-10', descanso: '90s' },
+            { nome: 'Remada curvada', series: 3, reps: '10-12', descanso: '75s' },
+            { nome: 'Rosca direta', series: 3, reps: '12', descanso: '45s' }
+          ]},
+          { letra: 'C', grupo: 'Pernas Completo', exercicios: [
+            { nome: 'Agachamento livre', series: 4, reps: '8-10', descanso: '120s' },
+            { nome: 'Leg press 45°', series: 3, reps: '12', descanso: '90s' },
+            { nome: 'Cadeira extensora', series: 3, reps: '15', descanso: '60s' }
+          ]}
+        ]
+      },
+      'Camila Rocha': {
+        divisao: 'Divisão AB · Full body · 4x por semana',
+        objetivo: 'Emagrecimento',
+        objetivoDesc: 'Foco em queima calórica e definição, com treinos mais dinâmicos e descansos curtos.',
+        dias: [
+          { letra: 'A', grupo: 'Full Body — Superior', exercicios: [
+            { nome: 'Supino inclinado com halteres', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Puxada frontal', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Elevação lateral', series: 3, reps: '15', descanso: '30s' }
+          ]},
+          { letra: 'B', grupo: 'Full Body — Inferior', exercicios: [
+            { nome: 'Agachamento com peso corporal', series: 3, reps: '15', descanso: '30s' },
+            { nome: 'Afundo', series: 3, reps: '12 (cada perna)', descanso: '45s' },
+            { nome: 'Prancha', series: 3, reps: '40s', descanso: '30s' }
+          ]}
+        ]
+      },
+      'Marcos Alves': {
+        divisao: 'Divisão ABCD · 4x por semana',
+        objetivo: 'Condicionamento físico',
+        objetivoDesc: 'Foco em resistência cardiovascular e muscular, unindo força e circuitos.',
+        dias: [
+          { letra: 'A', grupo: 'Superior — Empurrar', exercicios: [
+            { nome: 'Supino reto', series: 3, reps: '10', descanso: '60s' },
+            { nome: 'Desenvolvimento militar', series: 3, reps: '10', descanso: '60s' },
+            { nome: 'Tríceps testa', series: 3, reps: '12', descanso: '45s' }
+          ]},
+          { letra: 'B', grupo: 'Superior — Puxar', exercicios: [
+            { nome: 'Barra fixa assistida', series: 3, reps: '8', descanso: '90s' },
+            { nome: 'Remada baixa', series: 3, reps: '12', descanso: '60s' },
+            { nome: 'Rosca alternada', series: 3, reps: '12', descanso: '45s' }
+          ]},
+          { letra: 'C', grupo: 'Inferior', exercicios: [
+            { nome: 'Agachamento búlgaro', series: 3, reps: '10 (cada perna)', descanso: '60s' },
+            { nome: 'Levantamento terra romeno', series: 3, reps: '10', descanso: '90s' },
+            { nome: 'Panturrilha em pé', series: 3, reps: '15', descanso: '30s' }
+          ]},
+          { letra: 'D', grupo: 'Cardio e Core', exercicios: [
+            { nome: 'Bike ergométrica', series: 1, reps: '15 min', descanso: '—' },
+            { nome: 'Prancha lateral', series: 3, reps: '30s', descanso: '30s' },
+            { nome: 'Abdominal infra', series: 3, reps: '15', descanso: '30s' }
+          ]}
+        ]
+      },
+      'Beatriz Santos': {
+        divisao: 'Divisão ABC · 3x por semana',
+        objetivo: 'Hipertrofia',
+        objetivoDesc: 'Foco em ganho de massa muscular, com volume moderado a alto e cargas progressivas.',
+        dias: [
+          { letra: 'A', grupo: 'Peito e Tríceps', exercicios: [
+            { nome: 'Supino reto', series: 4, reps: '8', descanso: '90s' },
+            { nome: 'Crucifixo com halteres', series: 3, reps: '12', descanso: '60s' },
+            { nome: 'Tríceps corda', series: 3, reps: '12', descanso: '45s' }
+          ]},
+          { letra: 'B', grupo: 'Costas e Bíceps', exercicios: [
+            { nome: 'Remada curvada', series: 4, reps: '8', descanso: '90s' },
+            { nome: 'Puxada frontal', series: 3, reps: '10', descanso: '75s' },
+            { nome: 'Rosca scott', series: 3, reps: '12', descanso: '45s' }
+          ]},
+          { letra: 'C', grupo: 'Pernas e Glúteos', exercicios: [
+            { nome: 'Agachamento livre', series: 4, reps: '8', descanso: '120s' },
+            { nome: 'Cadeira flexora', series: 3, reps: '12', descanso: '60s' },
+            { nome: 'Elevação pélvica', series: 3, reps: '15', descanso: '60s' }
+          ]}
+        ]
+      },
+      'Diego Martins': {
+        divisao: 'Divisão ABCDE · 5x por semana',
+        objetivo: 'Força',
+        objetivoDesc: 'Foco em ganho de força máxima, com cargas altas e poucas repetições.',
+        dias: [
+          { letra: 'A', grupo: 'Peito', exercicios: [
+            { nome: 'Supino reto', series: 5, reps: '5', descanso: '120s' },
+            { nome: 'Supino inclinado', series: 4, reps: '6', descanso: '90s' }
+          ]},
+          { letra: 'B', grupo: 'Costas', exercicios: [
+            { nome: 'Levantamento terra', series: 5, reps: '5', descanso: '150s' },
+            { nome: 'Remada curvada', series: 4, reps: '6', descanso: '90s' }
+          ]},
+          { letra: 'C', grupo: 'Ombro', exercicios: [
+            { nome: 'Desenvolvimento militar', series: 5, reps: '5', descanso: '120s' },
+            { nome: 'Elevação lateral', series: 3, reps: '10', descanso: '60s' }
+          ]},
+          { letra: 'D', grupo: 'Pernas', exercicios: [
+            { nome: 'Agachamento livre', series: 5, reps: '5', descanso: '150s' },
+            { nome: 'Leg press', series: 4, reps: '8', descanso: '90s' }
+          ]},
+          { letra: 'E', grupo: 'Braços', exercicios: [
+            { nome: 'Rosca direta', series: 4, reps: '8', descanso: '60s' },
+            { nome: 'Tríceps francês', series: 4, reps: '8', descanso: '60s' }
+          ]}
+        ]
+      },
+      'Larissa Freitas': {
+        divisao: 'Divisão ABCDEF · 6x por semana',
+        objetivo: 'Emagrecimento',
+        objetivoDesc: 'Foco em queima calórica e definição, com treinos mais dinâmicos e descansos curtos.',
+        dias: [
+          { letra: 'A', grupo: 'Peito e Tríceps', exercicios: [
+            { nome: 'Supino com halteres', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Tríceps corda', series: 3, reps: '15', descanso: '30s' }
+          ]},
+          { letra: 'B', grupo: 'Costas e Bíceps', exercicios: [
+            { nome: 'Puxada frontal', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Rosca direta', series: 3, reps: '15', descanso: '30s' }
+          ]},
+          { letra: 'C', grupo: 'Pernas — Quadríceps', exercicios: [
+            { nome: 'Agachamento livre', series: 3, reps: '15', descanso: '45s' },
+            { nome: 'Leg press', series: 3, reps: '15', descanso: '45s' }
+          ]},
+          { letra: 'D', grupo: 'Pernas — Posterior e Glúteo', exercicios: [
+            { nome: 'Stiff', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Elevação pélvica', series: 3, reps: '15', descanso: '30s' }
+          ]},
+          { letra: 'E', grupo: 'Ombro e Core', exercicios: [
+            { nome: 'Desenvolvimento com halteres', series: 3, reps: '12', descanso: '45s' },
+            { nome: 'Prancha', series: 3, reps: '40s', descanso: '30s' }
+          ]},
+          { letra: 'F', grupo: 'Cardio', exercicios: [
+            { nome: 'Esteira intervalada', series: 1, reps: '20 min', descanso: '—' },
+            { nome: 'Bike ergométrica', series: 1, reps: '15 min', descanso: '—' }
+          ]}
+        ]
+      }
+    };
+
+    var ICONE_VIDEO = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polygon points="10,8 16,12 10,16" fill="currentColor" stroke="none"/></svg>';
+    var ICONE_TROCAR = '<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17,1 21,5 17,9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7,23 3,19 7,15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>';
+
+    function abrirTelaTreino(nome) {
+      var d = TREINO_DADOS[nome];
+      var dAluno = ALUNO_DADOS[nome];
+      if (!d || !dAluno) return;
+
+      var avatar = document.getElementById('treinoAvatar');
+      avatar.textContent = dAluno.iniciais;
+      avatar.className = 'relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08] ' +
+        (dAluno.gradiente ? 'bg-gradient-to-br from-primary-light to-primary-dark text-white' : 'bg-white/10 text-white/70');
+
+      document.getElementById('treinoNome').textContent = nome;
+      document.getElementById('treinoDivisao').textContent = d.divisao;
+      document.getElementById('treinoObjetivo').textContent = d.objetivo;
+      document.getElementById('treinoObjetivoDesc').textContent = d.objetivoDesc;
+
+      var diasEl = document.getElementById('treinoDias');
+      diasEl.innerHTML = d.dias.map(function (dia) {
+        var exercicios = dia.exercicios.map(function (ex) {
+          return '<div class="bg-white/[0.03] border border-white/[0.06] rounded-xl p-2.5">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<p class="text-white text-[12.5px] font-medium min-w-0 truncate">' + ex.nome + '</p>' +
+              '<div class="flex items-center gap-1 shrink-0">' +
+                '<button class="ex-video w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.06] text-white/50" data-ex="' + ex.nome + '" aria-label="Vídeo — ' + ex.nome + '">' + ICONE_VIDEO + '</button>' +
+                '<button class="ex-trocar w-6 h-6 flex items-center justify-center rounded-full bg-white/[0.06] text-white/50" data-ex="' + ex.nome + '" aria-label="Substituir — ' + ex.nome + '">' + ICONE_TROCAR + '</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-white/40">' +
+              '<span>' + ex.series + (ex.series == 1 ? ' série' : ' séries') + ' × ' + ex.reps + '</span>' +
+              '<span class="text-white/20">·</span>' +
+              '<span>Descanso ' + ex.descanso + '</span>' +
+              '<span class="text-white/20">·</span>' +
+              '<span class="text-white/30">Último: —</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+        return '<div class="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015] p-3.5">' +
+          '<div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>' +
+          '<div class="flex items-center gap-2.5">' +
+            '<span class="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-gradient-to-br from-primary-light to-primary-dark text-white text-[12px] font-bold shadow-[inset_0_1px_1px_rgba(255,255,255,.3)]">' + dia.letra + '</span>' +
+            '<p class="text-white text-[13.5px] font-semibold">' + dia.grupo + '</p>' +
+          '</div>' +
+          '<div class="mt-3 space-y-2">' + exercicios + '</div>' +
+        '</div>';
+      }).join('');
+
+      irPara('treino');
+    }
+
+    document.querySelectorAll('[data-open-treino]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirTelaTreino(btn.dataset.openTreino);
+      });
+    });
+
+    document.getElementById('treinoDias').addEventListener('click', function (e) {
+      var btnVideo = e.target.closest('.ex-video');
+      var btnTrocar = e.target.closest('.ex-trocar');
+      if (btnVideo) {
+        abrirDetalhe('Vídeo — ' + btnVideo.dataset.ex, 'Aqui tocaria um vídeo curto mostrando a execução correta de "' + btnVideo.dataset.ex + '", direto no app do aluno.');
+      } else if (btnTrocar) {
+        abrirDetalhe('Substituir — ' + btnTrocar.dataset.ex, 'Troque "' + btnTrocar.dataset.ex + '" por um exercício equivalente, que treina o mesmo grupo muscular — útil quando falta equipamento ou o aluno sente desconforto.');
+      }
+    });
+
+    // ---------- evolução do aluno (dashboard + linha do tempo) ----------
+    var EVOLUCAO_METRICAS_META = {
+      massa: { label: 'Massa muscular', unidade: 'kg' },
+      peso: { label: 'Peso corporal', unidade: 'kg' },
+      gordura: { label: '% Gordura corporal', unidade: '%' },
+      condicionamento: { label: 'Condicionamento', unidade: 'pts' }
+    };
+    var EVOLUCAO_CHECKPOINTS = ['Início', '1 mês', '3 meses', '6 meses'];
+    var EVOLUCAO_DATAS = ['fev/2026', 'mar/2026', 'mai/2026', 'ago/2026'];
+
+    var EVOLUCAO_DADOS = {
+      'João Pedro': { desde: 'fevereiro de 2026',
+        massa: [34, 35, 36.5, 37.8], peso: [78, 78.6, 79.4, 80.2], gordura: [18, 17, 15.5, 14], condicionamento: [60, 65, 72, 80] },
+      'Camila Rocha': { desde: 'fevereiro de 2026',
+        massa: [24, 24.5, 25, 25.5], peso: [68, 65.5, 62, 59], gordura: [28, 25, 21, 18], condicionamento: [50, 58, 68, 78] },
+      'Marcos Alves': { desde: 'fevereiro de 2026',
+        massa: [30, 31, 32, 33], peso: [89, 88, 86.5, 85], gordura: [26, 24, 21, 19], condicionamento: [45, 55, 68, 80] },
+      'Beatriz Santos': { desde: 'fevereiro de 2026',
+        massa: [22, 23, 24.5, 26], peso: [65, 66, 67.5, 69], gordura: [22, 20.5, 19, 17.5], condicionamento: [58, 63, 70, 77] },
+      'Diego Martins': { desde: 'fevereiro de 2026',
+        massa: [32, 33.5, 35.5, 38], peso: [92, 91.5, 90, 89], gordura: [27, 25, 22, 19], condicionamento: [48, 56, 66, 75] },
+      'Larissa Freitas': { desde: 'fevereiro de 2026',
+        massa: [18, 18.5, 19, 19.5], peso: [58, 56, 53.5, 51], gordura: [24, 21, 18, 15], condicionamento: [52, 60, 70, 82] }
+    };
+
+    // gera uma curva suave (Catmull-Rom → Bézier) no mesmo estilo do gráfico do Início
+    function construirGrafico(valores) {
+      var min = Math.min.apply(null, valores);
+      var max = Math.max.apply(null, valores);
+      var span = (max - min) || 1;
+      var n = valores.length;
+      var w = 280, h = 68, padY = 8;
+      var pontos = valores.map(function (v, i) {
+        var x = n === 1 ? 0 : (i / (n - 1)) * w;
+        var y = h - padY - ((v - min) / span) * (h - 2 * padY);
+        return { x: x, y: y };
+      });
+      var linha = 'M' + pontos[0].x.toFixed(1) + ',' + pontos[0].y.toFixed(1);
+      for (var i = 0; i < pontos.length - 1; i++) {
+        var p0 = pontos[i === 0 ? i : i - 1];
+        var p1 = pontos[i];
+        var p2 = pontos[i + 1];
+        var p3 = pontos[i + 2 === pontos.length ? i + 1 : i + 2];
+        var cp1x = p1.x + (p2.x - p0.x) / 6, cp1y = p1.y + (p2.y - p0.y) / 6;
+        var cp2x = p2.x - (p3.x - p1.x) / 6, cp2y = p2.y - (p3.y - p1.y) / 6;
+        linha += ' C' + cp1x.toFixed(1) + ',' + cp1y.toFixed(1) + ' ' + cp2x.toFixed(1) + ',' + cp2y.toFixed(1) + ' ' + p2.x.toFixed(1) + ',' + p2.y.toFixed(1);
+      }
+      var area = linha + ' L' + pontos[pontos.length - 1].x.toFixed(1) + ',' + h + ' L' + pontos[0].x.toFixed(1) + ',' + h + ' Z';
+      return { linha: linha, area: area, pontos: pontos };
+    }
+
+    function formatarNumero(v) {
+      return (Math.round(v * 10) / 10).toString().replace('.', ',');
+    }
+
+    // insere um ponto intermediário ondulado entre cada checkpoint real, pra dar aquele
+    // efeito de onda orgânica igual ao gráfico do Início — sem alterar os valores reais,
+    // que continuam batendo exatamente em cada marco (Início/1 mês/3 meses/6 meses...)
+    function gerarPontosOnda(valores) {
+      if (valores.length < 2) return valores;
+      var amplitudeBase = (Math.max.apply(null, valores) - Math.min.apply(null, valores)) * 0.08 || 1;
+      var expandido = [valores[0]];
+      for (var i = 0; i < valores.length - 1; i++) {
+        var a = valores[i], b = valores[i + 1];
+        var onda = (i % 2 === 0 ? 1 : -1) * (Math.abs(b - a) * 0.3 + amplitudeBase);
+        expandido.push((a + b) / 2 + onda);
+        expandido.push(b);
+      }
+      return expandido;
+    }
+
+    var CRITERIO_CONDICIONAMENTO = 'Escala de 0 a 100 · cardio + força + recuperação';
+
+    // registros extras adicionados via "Novo registro", por aluno — vivem durante a sessão (somem ao recarregar a página)
+    var EVOLUCAO_EXTRAS = {};
+
+    function checkpointsDoAluno(nome) {
+      var extras = EVOLUCAO_EXTRAS[nome] || [];
+      return EVOLUCAO_CHECKPOINTS.concat(extras.map(function (e) { return e.label; }));
+    }
+    function datasDoAluno(nome) {
+      var extras = EVOLUCAO_EXTRAS[nome] || [];
+      return EVOLUCAO_DATAS.concat(extras.map(function (e) { return e.data; }));
+    }
+    function serieDoAluno(nome, chave) {
+      var extras = EVOLUCAO_EXTRAS[nome] || [];
+      return EVOLUCAO_DADOS[nome][chave].concat(extras.map(function (e) { return e[chave]; }));
+    }
+
+    var alunoEvolucaoAtual = null;
+    var metricaEvolucaoAtual = 'massa';
+
+    function renderizarGraficoEvolucao() {
+      var meta = EVOLUCAO_METRICAS_META[metricaEvolucaoAtual];
+      var valores = serieDoAluno(alunoEvolucaoAtual, metricaEvolucaoAtual);
+      var checkpoints = checkpointsDoAluno(alunoEvolucaoAtual);
+      var g = construirGrafico(gerarPontosOnda(valores));
+
+      document.getElementById('evolucaoLinha').setAttribute('d', g.linha);
+      document.getElementById('evolucaoArea').setAttribute('d', g.area);
+      var pFinal = g.pontos[g.pontos.length - 1];
+      document.getElementById('evolucaoPontos').innerHTML =
+        '<circle cx="' + pFinal.x.toFixed(1) + '" cy="' + pFinal.y.toFixed(1) + '" r="5" fill="#17181d"/>' +
+        '<circle cx="' + pFinal.x.toFixed(1) + '" cy="' + pFinal.y.toFixed(1) + '" r="3" fill="#E5403E"/>';
+      document.getElementById('evolucaoLabelsX').innerHTML = checkpoints.map(function (c, i) {
+        var ultimo = i === checkpoints.length - 1;
+        return '<span class="' + (ultimo ? 'text-primary-light font-bold' : '') + '">' + c + '</span>';
+      }).join('');
+
+      var atual = valores[valores.length - 1];
+      var inicio = valores[0];
+      var delta = atual - inicio;
+      document.getElementById('evolucaoValorAtual').innerHTML = formatarNumero(atual) + '<span class="text-white/40 text-sm font-normal"> ' + meta.unidade + '</span>';
+      document.getElementById('evolucaoLabelAtual').textContent = meta.label;
+
+      var criterioEl = document.getElementById('evolucaoCriterio');
+      var mostrarCriterio = metricaEvolucaoAtual === 'condicionamento';
+      criterioEl.classList.toggle('hidden', !mostrarCriterio);
+      if (mostrarCriterio) criterioEl.textContent = CRITERIO_CONDICIONAMENTO;
+
+      var positivo = metricaEvolucaoAtual === 'gordura' ? delta <= 0 : (metricaEvolucaoAtual === 'peso' ? null : delta >= 0);
+      var deltaEl = document.getElementById('evolucaoDelta');
+      var setaSvg = '<svg class="w-2.5 h-2.5' + (delta < 0 ? ' rotate-180' : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5,12 12,5 19,12"/></svg>';
+      deltaEl.innerHTML = setaSvg + '<span>' + (delta >= 0 ? '+' : '') + formatarNumero(delta) + ' ' + meta.unidade + '</span>';
+      deltaEl.className = 'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ' +
+        (positivo === null ? 'text-white/60 bg-white/[0.08]' : positivo ? 'text-emerald-400 bg-emerald-400/10' : 'text-amber-400 bg-amber-400/10');
+    }
+
+    var ICONES_STAT = {
+      peso: '<path d="M12 3v18"/><path d="M5 8l-3 7a4 4 0 008 0z"/><path d="M19 8l-3 7a4 4 0 008 0z"/><path d="M5 8h14"/><path d="M9 3h6"/>',
+      massa: '<path d="M4 8v8M2 10v4M7 6v12M17 6v12M20 10v4M22 8v8"/><path d="M7 12h10"/>',
+      gordura: '<path d="M12 2s7 8.5 7 13a7 7 0 11-14 0c0-4.5 7-13 7-13z"/>',
+      condicionamento: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'
+    };
+
+    function renderizarTimelineEvolucao() {
+      var campos = [
+        { chave: 'peso', label: 'Peso', suf: ' kg' },
+        { chave: 'massa', label: 'Massa muscular', suf: ' kg' },
+        { chave: 'gordura', label: '% Gordura', suf: '%' },
+        { chave: 'condicionamento', label: 'Condicionamento', suf: ' pts' }
+      ];
+      var checkpoints = checkpointsDoAluno(alunoEvolucaoAtual);
+      var datas = datasDoAluno(alunoEvolucaoAtual);
+      var series = {};
+      campos.forEach(function (campo) { series[campo.chave] = serieDoAluno(alunoEvolucaoAtual, campo.chave); });
+
+      document.getElementById('evolucaoTimeline').innerHTML = checkpoints.map(function (c, i) {
+        var ultimo = i === checkpoints.length - 1;
+        var stats = campos.map(function (campo) {
+          return '<div class="flex items-center gap-2 bg-white/[0.03] border border-white/[0.05] rounded-xl px-2.5 py-2">' +
+            '<svg class="w-3.5 h-3.5 text-primary-light shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONES_STAT[campo.chave] + '</svg>' +
+            '<div class="min-w-0"><p class="text-white/35 text-[9px] leading-tight">' + campo.label + '</p><p class="text-white text-[12.5px] font-semibold leading-tight mt-0.5">' + formatarNumero(series[campo.chave][i]) + campo.suf + '</p></div>' +
+          '</div>';
+        }).join('');
+        return '<div class="relative overflow-hidden rounded-2xl border ' + (ultimo ? 'border-primary-light/25 bg-gradient-to-br from-primary/[0.09] to-primary/[0.01]' : 'border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.015]') + ' p-3.5">' +
+          '<div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent ' + (ultimo ? 'via-primary-light/25' : 'via-white/15') + ' to-transparent"></div>' +
+          '<div class="relative flex items-center justify-between">' +
+            '<div class="flex items-center gap-2">' +
+              (ultimo ? '<span class="w-1.5 h-1.5 rounded-full bg-primary-light"></span>' : '') +
+              '<p class="' + (ultimo ? 'text-primary-light' : 'text-white') + ' text-[13px] font-semibold">' + c + '</p>' +
+            '</div>' +
+            '<p class="text-white/30 text-[10px]">' + datas[i] + '</p>' +
+          '</div>' +
+          '<div class="relative mt-2.5 grid grid-cols-2 gap-1.5">' + stats + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function adicionarRegistroAgora(nome) {
+      var campos = ['massa', 'peso', 'gordura', 'condicionamento'];
+      var novo = { label: 'Agora', data: 'hoje' };
+      campos.forEach(function (chave) {
+        var serie = serieDoAluno(nome, chave);
+        var n = serie.length;
+        var ultimo = serie[n - 1];
+        var penultimo = serie[n - 2];
+        var tendencia = (ultimo - penultimo) * 0.5;
+        novo[chave] = Math.round((ultimo + tendencia) * 10) / 10;
+      });
+      if (!EVOLUCAO_EXTRAS[nome]) EVOLUCAO_EXTRAS[nome] = [];
+      EVOLUCAO_EXTRAS[nome].push(novo);
+    }
+
+    function habilitarScrollHorizontal(el) {
+      el.addEventListener('wheel', function (e) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) {
+          el.scrollLeft += e.deltaY;
+          e.preventDefault();
+        }
+      }, { passive: false });
+      // só vira "arrastar" depois de passar de um limiar de movimento — assim um toque/clique normal
+      // (ex: trocar de métrica) nunca é engolido pelo gesto de arrastar a fileira
+      var LIMIAR = 6;
+      var pressionando = false, arrastando = false, pointerId = null, inicioX = 0, inicioScroll = 0;
+      el.addEventListener('pointerdown', function (e) {
+        pressionando = true;
+        arrastando = false;
+        pointerId = e.pointerId;
+        inicioX = e.clientX;
+        inicioScroll = el.scrollLeft;
+      });
+      el.addEventListener('pointermove', function (e) {
+        if (!pressionando) return;
+        var delta = e.clientX - inicioX;
+        if (!arrastando) {
+          if (Math.abs(delta) < LIMIAR) return;
+          arrastando = true;
+          el.setPointerCapture(pointerId);
+        }
+        el.scrollLeft = inicioScroll - delta;
+      });
+      function soltar() { pressionando = false; arrastando = false; }
+      el.addEventListener('pointerup', soltar);
+      el.addEventListener('pointercancel', soltar);
+    }
+    habilitarScrollHorizontal(document.getElementById('evolucaoChips'));
+
+    var evolucaoChipsEl = document.getElementById('evolucaoChips');
+    var chipsSetaEsq = document.getElementById('chipsSetaEsq');
+    var chipsSetaDir = document.getElementById('chipsSetaDir');
+    var chipsFadeEsq = document.getElementById('chipsFadeEsq');
+    var chipsFadeDir = document.getElementById('chipsFadeDir');
+
+    function atualizarSetasChips() {
+      var max = evolucaoChipsEl.scrollWidth - evolucaoChipsEl.clientWidth;
+      var podeRolar = max > 4;
+      var noInicio = evolucaoChipsEl.scrollLeft <= 4;
+      var noFim = evolucaoChipsEl.scrollLeft >= max - 4;
+      chipsSetaEsq.classList.toggle('hidden', !podeRolar || noInicio);
+      chipsFadeEsq.classList.toggle('hidden', !podeRolar || noInicio);
+      chipsSetaDir.classList.toggle('hidden', !podeRolar || noFim);
+      chipsFadeDir.classList.toggle('hidden', !podeRolar || noFim);
+    }
+    evolucaoChipsEl.addEventListener('scroll', atualizarSetasChips);
+
+    // anima o scroll horizontal manualmente (não depende do scroll-behavior:smooth nativo)
+    function rolarChipsAte(destino) {
+      var max = evolucaoChipsEl.scrollWidth - evolucaoChipsEl.clientWidth;
+      destino = Math.max(0, Math.min(max, destino));
+      var inicio = evolucaoChipsEl.scrollLeft;
+      var distancia = destino - inicio;
+      var duracao = 220;
+      var t0 = null;
+      function passo(t) {
+        if (t0 === null) t0 = t;
+        var progresso = Math.min(1, (t - t0) / duracao);
+        var suavizado = 1 - Math.pow(1 - progresso, 3);
+        evolucaoChipsEl.scrollLeft = inicio + distancia * suavizado;
+        if (progresso < 1) requestAnimationFrame(passo);
+      }
+      requestAnimationFrame(passo);
+    }
+    chipsSetaEsq.addEventListener('click', function () { rolarChipsAte(evolucaoChipsEl.scrollLeft - 130); });
+    chipsSetaDir.addEventListener('click', function () { rolarChipsAte(evolucaoChipsEl.scrollLeft + 130); });
+
+    document.getElementById('btnNovoRegistro').addEventListener('click', function () {
+      if (!alunoEvolucaoAtual) return;
+      adicionarRegistroAgora(alunoEvolucaoAtual);
+      renderizarGraficoEvolucao();
+      renderizarTimelineEvolucao();
+      requestAnimationFrame(atualizarSetasChips);
+    });
+
+    function abrirEvolucao(nome) {
+      var d = EVOLUCAO_DADOS[nome];
+      var dAluno = ALUNO_DADOS[nome];
+      if (!d || !dAluno) return;
+
+      var avatar = document.getElementById('evolucaoAvatar');
+      avatar.textContent = dAluno.iniciais;
+      avatar.className = 'relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08] ' +
+        (dAluno.gradiente ? 'bg-gradient-to-br from-primary-light to-primary-dark text-white' : 'bg-white/10 text-white/70');
+
+      document.getElementById('evolucaoNome').textContent = nome;
+      document.getElementById('evolucaoDesde').textContent = 'Acompanhamento desde ' + d.desde;
+
+      alunoEvolucaoAtual = nome;
+      metricaEvolucaoAtual = 'massa';
+      document.querySelectorAll('.evo-chip').forEach(function (c) {
+        var ativo = c.dataset.metrica === 'massa';
+        c.classList.toggle('active', ativo);
+        c.classList.toggle('bg-gradient-to-br', ativo);
+        c.classList.toggle('from-primary-light', ativo);
+        c.classList.toggle('to-primary-dark', ativo);
+        c.classList.toggle('shadow-[0_4px_10px_-2px_rgba(226,49,42,.45)]', ativo);
+        c.classList.toggle('text-white', ativo);
+        c.classList.toggle('bg-white/[0.04]', !ativo);
+        c.classList.toggle('border', !ativo);
+        c.classList.toggle('border-white/10', !ativo);
+        c.classList.toggle('text-white/65', !ativo);
+      });
+
+      renderizarGraficoEvolucao();
+      renderizarTimelineEvolucao();
+      irPara('evolucao');
+      requestAnimationFrame(atualizarSetasChips);
+    }
+
+    document.querySelectorAll('[data-open-evolucao]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirEvolucao(btn.dataset.openEvolucao);
+      });
+    });
+
+    document.getElementById('evolucaoChips').addEventListener('click', function (e) {
+      var chip = e.target.closest('.evo-chip');
+      if (!chip) return;
+      metricaEvolucaoAtual = chip.dataset.metrica;
+      document.querySelectorAll('.evo-chip').forEach(function (c) {
+        var ativo = c === chip;
+        c.classList.toggle('active', ativo);
+        c.classList.toggle('bg-gradient-to-br', ativo);
+        c.classList.toggle('from-primary-light', ativo);
+        c.classList.toggle('to-primary-dark', ativo);
+        c.classList.toggle('shadow-[0_4px_10px_-2px_rgba(226,49,42,.45)]', ativo);
+        c.classList.toggle('text-white', ativo);
+        c.classList.toggle('bg-white/[0.04]', !ativo);
+        c.classList.toggle('border', !ativo);
+        c.classList.toggle('border-white/10', !ativo);
+        c.classList.toggle('text-white/65', !ativo);
+      });
+      renderizarGraficoEvolucao();
+    });
+
+    document.getElementById('btnExportarGrafico').addEventListener('click', function () {
+      var meta = EVOLUCAO_METRICAS_META[metricaEvolucaoAtual];
+      abrirDetalhe('Exportar gráfico', 'Aqui geraria uma imagem do gráfico de "' + meta.label + '" de ' + alunoEvolucaoAtual + ', pronta pra enviar direto pelo WhatsApp.');
+    });
+
+    // ---------- histórico de pagamento ----------
+    var ICONE_PIX = '<path d="M7 12l3.5-3.5a2 2 0 012.8 0L17 12l-3.7 3.5a2 2 0 01-2.8 0z"/><path d="M4 9.5V8a2 2 0 012-2h1.5"/><path d="M20 14.5V16a2 2 0 01-2 2h-1.5"/>';
+    var ICONE_CARTAO = '<rect x="2" y="5" width="20" height="14" rx="2.5"/><line x1="2" y1="10" x2="22" y2="10"/>';
+
+    function mesesRecentes(n) {
+      var MESES3 = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      var base = 7; // agosto (índice 7)
+      var out = [];
+      for (var i = n - 1; i >= 0; i--) out.push(MESES3[(base - i + 12) % 12]);
+      return out;
+    }
+
+    function montarHistorico(metodo, ultimoStatus) {
+      var meses = mesesRecentes(5);
+      return meses.map(function (mes, i) {
+        var ultimo = i === meses.length - 1;
+        return {
+          mes: mes,
+          data: ultimo ? (ultimoStatus === 'Pago' ? '22 ' + mes.toLowerCase() : (ultimoStatus === 'Atrasado' ? 'venceu há 2 dias' : 'vence em 3 dias')) : '2 ' + mes.toLowerCase(),
+          valor: 'R$ 89,90',
+          metodo: metodo,
+          status: ultimo ? ultimoStatus : 'Pago'
+        };
+      });
+    }
+
+    var PAGAMENTO_DADOS = {
+      'João Pedro': { metodo: 'Pix', status: 'Pago', proxima: 'Próxima cobrança em 28 dias', pontualidade: '100%', totalRecebido: 'R$ 449,50', historico: montarHistorico('Pix', 'Pago') },
+      'Camila Rocha': { metodo: 'Cartão', status: 'Pago', proxima: 'Próxima cobrança em 12 dias', pontualidade: '100%', totalRecebido: 'R$ 449,50', historico: montarHistorico('Cartão', 'Pago') },
+      'Marcos Alves': { metodo: 'Cartão', status: 'Pendente', proxima: 'Cobrança em aberto — lembrete já enviado', pontualidade: '83%', totalRecebido: 'R$ 359,60', historico: montarHistorico('Cartão', 'Pendente') },
+      'Beatriz Santos': { metodo: 'Pix', status: 'Pago', proxima: 'Próxima cobrança em 30 dias', pontualidade: '100%', totalRecebido: 'R$ 449,50', historico: montarHistorico('Pix', 'Pago') },
+      'Diego Martins': { metodo: 'Cartão', status: 'Atrasado', proxima: 'Cobrança vence amanhã', pontualidade: '83%', totalRecebido: 'R$ 359,60', historico: montarHistorico('Cartão', 'Atrasado') },
+      'Larissa Freitas': { metodo: 'Pix', status: 'Pago', proxima: 'Próxima cobrança em 27 dias', pontualidade: '100%', totalRecebido: 'R$ 449,50', historico: montarHistorico('Pix', 'Pago') }
+    };
+
+    var CORES_STATUS_PAG = {
+      'Pago': 'text-emerald-400 bg-emerald-400/10',
+      'Pendente': 'text-amber-400 bg-amber-400/10',
+      'Atrasado': 'text-primary-light bg-primary/15'
+    };
+    var CORES_DOT_PAG = {
+      'Pago': 'border-emerald-400 text-emerald-400',
+      'Pendente': 'border-amber-400 text-amber-400',
+      'Atrasado': 'border-primary-light text-primary-light'
+    };
+    var CORES_PULSO_PAG = {
+      'Pago': 'bg-emerald-400/70',
+      'Pendente': 'bg-amber-400/70',
+      'Atrasado': 'bg-primary-light'
+    };
+
+    function abrirPagamento(nome) {
+      var d = PAGAMENTO_DADOS[nome];
+      var dAluno = ALUNO_DADOS[nome];
+      if (!d || !dAluno) return;
+
+      var avatar = document.getElementById('pagamentoAvatar');
+      avatar.textContent = dAluno.iniciais;
+      avatar.className = 'relative w-11 h-11 shrink-0 flex items-center justify-center rounded-full text-white text-[12px] font-bold ring-2 ring-white/[0.08] ' +
+        (dAluno.gradiente ? 'bg-gradient-to-br from-primary-light to-primary-dark text-white' : 'bg-white/10 text-white/70');
+
+      document.getElementById('pagamentoNome').textContent = nome;
+      document.getElementById('pagamentoDesde').textContent = 'Cliente desde fevereiro de 2026';
+      document.getElementById('pagamentoValorMensal').textContent = 'R$ 89,90';
+      document.getElementById('pagamentoProxima').textContent = d.proxima;
+      document.getElementById('pagamentoPontualidade').textContent = d.pontualidade;
+      document.getElementById('pagamentoTotalRecebido').textContent = d.totalRecebido;
+
+      var badge = document.getElementById('pagamentoStatusBadge');
+      badge.textContent = d.status;
+      badge.className = 'inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ' + CORES_STATUS_PAG[d.status];
+
+      document.getElementById('pagamentoPulso').innerHTML = d.historico.map(function (h, i) {
+        var ultimo = i === d.historico.length - 1;
+        var altura = ultimo ? 24 : (14 + (i % 3) * 3);
+        return '<div class="flex-1 flex flex-col items-center gap-1">' +
+          '<span class="w-full rounded-full ' + CORES_PULSO_PAG[h.status] + (ultimo ? ' ring-2 ring-white/25' : '') + '" style="height:' + altura + 'px"></span>' +
+          '<span class="text-[8px] font-semibold ' + (ultimo ? 'text-white/70' : 'text-white/25') + '">' + h.mes + '</span>' +
+        '</div>';
+      }).join('');
+
+      var historicoRecente = d.historico.slice().reverse();
+      document.getElementById('pagamentoHistorico').innerHTML =
+        '<div class="absolute left-[13px] top-3.5 bottom-3.5 w-0.5 bg-white/10"></div>' +
+        '<div class="space-y-3">' +
+        historicoRecente.map(function (h) {
+          var corBadge = CORES_STATUS_PAG[h.status];
+          var corDot = CORES_DOT_PAG[h.status];
+          return '<div class="relative flex items-start gap-3">' +
+            '<span class="relative z-10 w-7 h-7 shrink-0 rounded-full flex items-center justify-center bg-[#17181d] border-2 ' + corDot + '">' +
+              '<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (h.metodo === 'Pix' ? ICONE_PIX : ICONE_CARTAO) + '</svg>' +
+            '</span>' +
+            '<div class="relative overflow-hidden min-w-0 flex-1 bg-gradient-to-br from-white/[0.05] to-white/[0.015] border border-white/10 rounded-2xl p-3">' +
+              '<div class="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>' +
+              '<div class="relative flex items-center justify-between gap-2">' +
+                '<p class="text-white text-[13px] font-semibold">' + h.valor + '</p>' +
+                '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ' + corBadge + '">' + h.status + '</span>' +
+              '</div>' +
+              '<p class="relative text-white/40 text-[10.5px] mt-0.5">' + h.metodo + ' · ' + h.data + '</p>' +
+            '</div>' +
+          '</div>';
+        }).join('') +
+        '</div>';
+
+      irPara('pagamento');
+    }
+
+    document.querySelectorAll('[data-open-pagamento]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        abrirPagamento(btn.dataset.openPagamento);
+      });
+    });
+
+    // ---------- perfil: copiar link de cadastro ----------
+    document.getElementById('btnCopiarLink').addEventListener('click', function () {
+      var icone = document.getElementById('iconeCopiarLink');
+      var texto = document.getElementById('textoCopiarLink');
+      icone.innerHTML = '<polyline points="20,6 9,17 4,12"/>';
+      texto.textContent = 'Copiado!';
+      setTimeout(function () {
+        icone.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>';
+        texto.textContent = 'Copiar';
+      }, 1500);
+    });
+
+    // ---------- financeiro: meses do gráfico, lembretes e exportação ----------
+    (function renderizarGraficoFinanceiro() {
+      var valores = [3700, 4450, 3850, 4500, 3860, 4320];
+      var g = construirGrafico(gerarPontosOnda(valores));
+      document.getElementById('path-financeiro-linha').setAttribute('d', g.linha);
+      document.getElementById('path-financeiro-area').setAttribute('d', g.area);
+      var pFinal = g.pontos[g.pontos.length - 1];
+      document.getElementById('circ-financeiro-fundo').setAttribute('cx', pFinal.x.toFixed(1));
+      document.getElementById('circ-financeiro-fundo').setAttribute('cy', pFinal.y.toFixed(1));
+      document.getElementById('circ-financeiro-ponto').setAttribute('cx', pFinal.x.toFixed(1));
+      document.getElementById('circ-financeiro-ponto').setAttribute('cy', pFinal.y.toFixed(1));
+    })();
+
+    document.getElementById('receitaMeses').addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-mes]');
+      if (!btn) return;
+      abrirDetalhe('Receita — ' + btn.dataset.mes, btn.dataset.valor + ' recebidos em ' + btn.dataset.mes.toLowerCase() + '. Toque nos outros meses pra comparar.');
+    });
+
+
+    document.querySelectorAll('[data-lembrar]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var nome = btn.dataset.lembrar;
+        abrirDetalhe('Lembrete enviado', 'Um aviso automático de cobrança foi enviado pra ' + nome + ' — sem você precisar mandar mensagem pelo WhatsApp.');
+      });
+    });
+
+    document.getElementById('btnExportarFinanceiro').addEventListener('click', function () {
+      abrirDetalhe('Exportar relatório', 'Aqui geraria um PDF com o resumo financeiro do mês — receita, pendências e cobranças — pronto pra guardar ou compartilhar.');
+    });
+
+    // ---------- ações rápidas (cadastrar / importar / lembrete / link) ----------
+    var ACOES_DADOS = {
+      cadastrar: { titulo: 'Cadastrar aluno', desc: 'Aqui abriria o formulário de cadastro: nome, contato, valor da mensalidade e plano de treino.' },
+      importar: { titulo: 'Importar alunos', desc: 'Envie uma planilha (Excel ou CSV) e a IA organiza a lista de alunos automaticamente pra você.' },
+      lembrete: { titulo: 'Lembrete de cobrança', desc: 'Envia um aviso automático pros alunos com pagamento pendente — sem você precisar mandar mensagem.' },
+      link: { titulo: 'Link de cadastro', desc: 'Gere um link único pra enviar ao aluno — ele preenche os próprios dados e já entra direto no seu painel.' }
+    };
+
+    document.querySelectorAll('.acao-item').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = ACOES_DADOS[btn.dataset.acao];
+        if (d) abrirDetalhe(d.titulo, d.desc);
+      });
+    });
+
+    document.getElementById('btnAdicionar').addEventListener('click', function () { irPara('acoes'); });
+    document.getElementById('btnAdicionarAluno').addEventListener('click', function () { irPara('acoes'); });
+    document.getElementById('btnImportarIA').addEventListener('click', function () {
+      abrirDetalhe('Importar com IA', 'Envie uma planilha, print ou até uma lista solta de WhatsApp — a IA reconhece nome, contato e valor da mensalidade e cadastra os alunos automaticamente pra você.');
+    });
+  </script>
+
+</body>
+</html>
