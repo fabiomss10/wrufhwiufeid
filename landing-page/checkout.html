@@ -192,12 +192,18 @@ input[aria-invalid=true]{border-color:#e0705f}
 .pe a{color:var(--muted);transition:color .2s;display:inline-flex;align-items:center;gap:7px;min-height:44px}
 .pe a:hover{color:var(--off)}
 
-.frase{justify-self:center;max-width:640px}
+.frase{justify-self:center;max-width:640px;position:relative}
 @media(max-width:1100px){.frase{display:none}}
+/* halo escuro atrás do texto — sem isso, o vermelho da frase some dentro do
+   glow vermelho de fundo (mesma família de cor, quase sem contraste) */
+.frase::before{content:"";position:absolute;inset:-15% -20%;z-index:-1;
+  background:radial-gradient(closest-side, rgba(0,0,0,.4) 0%, rgba(0,0,0,0) 72%)}
 .frase p{font-size:clamp(40px,5.8vw,84px);font-weight:300;
-  letter-spacing:-.03em;line-height:1.05;color:var(--off)}
+  letter-spacing:-.03em;line-height:1.05;color:var(--off);
+  text-shadow:0 6px 28px rgba(0,0,0,.55)}
 .frase p span{display:block}
-.frase p em{font-style:normal;font-weight:700;color:var(--primary-light)}
+.frase p em{font-style:normal;font-weight:700;color:#ff8f82;
+  text-shadow:0 6px 24px rgba(0,0,0,.65)}
 
 @media(max-width:560px){
   input, select, select option, .btn{font-size:16px}
