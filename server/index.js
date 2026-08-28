@@ -12,10 +12,12 @@
  */
 require('dotenv').config();
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const checkoutRoutes = require('./routes/checkout');
 const webhookRoutes = require('./routes/webhook');
+const contaRoutes = require('./routes/conta');
 const naut = require('./naut');
 
 const app = express();
@@ -27,9 +29,11 @@ const RAIZ_SITE = path.join(__dirname, '..', 'landing-page');
 // não sobre o objeto já parseado de volta pra string, que pode não bater
 // byte a byte com o que a Naut assinou).
 app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
+app.use(cookieParser());
 
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/webhooks', webhookRoutes);
+app.use('/api/conta', contaRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, nautConfigurada: naut.chavesConfiguradas() });

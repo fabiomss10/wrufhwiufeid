@@ -53,7 +53,7 @@ router.post('/cobrar', async (req, res) => {
       requestId,
     });
 
-    estado.registrar(dados.paymentId, { planoId, comprador: comprador.email, metodo });
+    estado.registrar(dados.paymentId, { planoId, comprador, metodo });
 
     // Cartão pode confirmar na hora (sem passar pela tela de Pix/espera).
     if (metodo === 'credit_card' && dados.status === 'completed') {
@@ -90,6 +90,26 @@ router.get('/estado', (req, res) => {
   const registro = estado.consultar(id);
   if (!registro) return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Pagamento não encontrado.' } });
   res.json({ success: true, estado: registro.estado, passe: registro.estado === 'pago' ? id : '' });
+});
+
+/**
+ * GET /api/checkout/passe?passe=pay_xxx
+ * A tela de criar conta chama isso pra pré-preencher nome/e-mail/telefone/CPF
+ * de quem já pagou — só funciona se o pagamento estiver "pago" de verdade,
+ * senão qualquer id causaria cadastro sem pagamento correspondente.
+ */
+router.get('/passe', (req, res) => {
+  const passe = req.query.passe;
+  const registro = passe ? estado.consultar(passe) : null;
+  if (!registro || registro.estado !== 'pago') {
+    return res.status(404).json({ success: false, error: { code: 'PASSE_INVALIDO', message: 'Link de pagamento inválido ou expirado.' } });
+  }
+  const plano = planoPorId(registro.planoId);
+  res.json({
+    success: true,
+    comprador: registro.comprador || {},
+    plano: plano ? { id: registro.planoId, nome: plano.nome } : null,
+  });
 });
 
 module.exports = router;

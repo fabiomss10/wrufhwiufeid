@@ -545,16 +545,27 @@ $("#formPag").addEventListener("submit", async (ev) => {
     };
   }
 
-  let real = null;
+  let real = null, erroReal = null;
   try {
     const r = await fetch("/api/checkout/cobrar", {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(corpo),
     });
     const j = await r.json();
     if (r.ok && j.success) real = j;
-    else if (j?.error?.code !== "NAUT_NOT_CONFIGURED") throw new Error(j?.error?.message || "não consegui cobrar");
+    else if (j?.error?.code === "NAUT_NOT_CONFIGURED") { /* cai pro modo demonstração de propósito */ }
+    else erroReal = j?.error?.message || "não consegui cobrar";
   } catch (e) {
-    // sem backend no ar (site estático) ou erro de rede — segue pro modo demonstração
+    // backend inatingível (rede caiu, ou site publicado só como estático,
+    // sem servidor) — cai pro modo demonstração. Diferente de erroReal: aqui
+    // não sabemos se o pagamento teria sido aprovado ou não.
+  }
+
+  // ERRO DE VERDADE (ex.: cartão recusado) PARA AQUI — nunca cai pro modo
+  // demonstração fingindo sucesso. Um "Assinatura confirmada" depois de uma
+  // recusa real seria mostrar pro cliente que pagou quando não pagou.
+  if (erroReal) {
+    b.disabled = false; b.innerHTML = antes;
+    return aviso(erroReal, true, "#areaAvisoPag");
   }
 
   if (real) {
@@ -627,6 +638,7 @@ function esperaPagamento(realBackend){
 
 function pronto(){
   $("#prontoSub").textContent = `Plano ${plano.nome} ativo. Agora é criar a sua conta — leva menos de um minuto.`;
+  if (idPagamento) $("#irCriarConta").href = `criar-conta.html?passe=${encodeURIComponent(idPagamento)}`;
   mostra("etPronto");
 }
 

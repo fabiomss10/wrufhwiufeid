@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="icon" href="../icone-ph.png" type="image/png">
+<meta name="theme-color" content="#0e0f12">
+<title>Criar conta · PersonalHub</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Crie sua conta no PersonalHub — seus dados já vêm preenchidos, é só criar a senha.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+<style>
+/* Mesma base visual do checkout.html — cartão de vidro, glow vermelho,
+   frase à direita. Ver checkout.html pros comentários de design completos;
+   aqui só o que muda: um formulário só, sem passos. */
+:root{
+  --obsidiana:#0e0f12; --obsidiana-2:#17181d;
+  --primary:#E2312A; --primary-light:#E5403E; --primary-dark:#882828;
+  --off:#F7F3F3; --muted:rgba(247,243,243,.72); --muted-2:rgba(247,243,243,.5);
+  --stroke:rgba(247,243,243,.13);
+  --fonte:'Satoshi','Hubot Sans',system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fonte);background:#0b0b0d;color:var(--off);
+  -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.6;
+  min-height:100svh;position:relative;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit}
+
+.fundo{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0b0b0d}
+.bolha{position:absolute;border-radius:50%;filter:blur(90px);opacity:.85}
+.b1{width:60vw;height:60vw;right:-14vw;top:-22vw;
+  background:radial-gradient(circle at 40% 40%, var(--primary-light) 0%, var(--primary-dark) 42%, rgba(136,40,40,0) 72%)}
+.b2{width:44vw;height:44vw;right:6vw;top:6vw;
+  background:radial-gradient(circle at 50% 50%, #ff6b5b 0%, rgba(255,107,91,.35) 45%, rgba(255,107,91,0) 70%);opacity:.5}
+.b3{width:52vw;height:52vw;left:-18vw;bottom:-20vw;
+  background:radial-gradient(circle at 60% 40%, var(--primary) 0%, #4a1616 45%, rgba(74,22,22,0) 72%)}
+@media(max-width:900px){.bolha{filter:blur(70px)}}
+
+.tela{position:relative;z-index:1;min-height:100svh;display:grid;
+  grid-template-columns:minmax(0,860px) minmax(0,1fr);align-items:center;gap:40px;
+  padding:48px 40px}
+@media(max-width:1100px){.tela{grid-template-columns:minmax(0,1fr);justify-items:center;padding:40px 22px}}
+
+.card{width:100%;max-width:452px;min-width:0;margin-left:96px;padding:34px;
+  background:rgba(14,15,18,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--stroke);border-radius:20px;
+  box-shadow:0 30px 90px rgba(0,0,0,.55)}
+@media(max-width:1100px){.card{margin-left:0}}
+@media(max-width:520px){.card{padding:26px 20px}}
+
+.topo-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px}
+.marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
+.marca img{width:30px;height:30px;border-radius:8px;display:block}
+.marca .nome{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.pais{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+  border:1px solid var(--stroke);border-radius:8px;font-size:12.5px;color:var(--muted)}
+
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.abertura{margin-top:9px;font-size:13.5px;color:var(--muted-2);line-height:1.55;max-width:340px}
+
+form{margin-top:24px;display:flex;flex-direction:column;gap:13px}
+.entrada{position:relative}
+input{width:100%;height:45px;padding:0 15px;background:transparent;
+  border:2px solid rgba(247,243,243,.125);border-radius:8px;font-size:15px;color:var(--off);
+  outline:none;transition:border-color .2s}
+input::placeholder{color:rgba(247,243,243,.4)}
+input:focus{border-color:var(--primary-light)}
+input[aria-invalid=true]{border-color:#e0705f}
+input[type=password]{padding-right:48px}
+.olho{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;
+  display:grid;place-items:center;background:none;border:0;cursor:pointer;color:var(--muted-2)}
+.olho:hover{color:var(--off)}
+.olho svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.erro{margin-top:-4px;font-size:12.5px;color:#e0705f}
+
+.btn{margin-top:5px;width:100%;height:53px;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(90deg,var(--primary-light),var(--primary-dark));color:#fff;border:0;border-radius:8px;
+  font-size:15px;font-weight:700;cursor:pointer;transition:filter .2s,transform .12s;
+  box-shadow:0 10px 28px -8px rgba(226,49,42,.55)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes gira{to{transform:rotate(360deg)}}
+.girando{animation:gira .8s linear infinite}
+
+.risco{height:1px;background:var(--stroke);margin:24px 0 18px}
+.pe{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13.5px;font-weight:500}
+.pe a{color:var(--muted);transition:color .2s;display:inline-flex;align-items:center;gap:7px;min-height:44px}
+.pe a:hover{color:var(--off)}
+
+.btn-secundario{margin-top:20px;width:100%;height:50px;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  border:1px solid var(--stroke);border-radius:8px;font-size:14px;color:var(--muted);
+  transition:border-color .2s,color .2s,background .2s}
+.btn-secundario:hover{border-color:var(--primary-light);color:var(--off);background:rgba(247,243,243,.04)}
+.btn-secundario b{color:var(--primary-light);font-weight:700}
+
+.aviso{margin-top:16px;padding:15px 17px;border:1px solid var(--stroke);border-radius:10px;
+  background:rgba(247,243,243,.04);font-size:13px;color:var(--muted);line-height:1.6}
+.aviso b{color:var(--off);font-weight:600}
+.aviso.ok{border-color:rgba(79,160,108,.4);background:rgba(79,160,108,.1);color:var(--off)}
+.aviso.mau{border-color:rgba(224,112,95,.45);background:rgba(224,112,95,.1)}
+
+.frase{justify-self:center;max-width:640px;position:relative}
+@media(max-width:1100px){.frase{display:none}}
+.frase::before{content:"";position:absolute;inset:-15% -20%;z-index:-1;
+  background:radial-gradient(closest-side, rgba(0,0,0,.4) 0%, rgba(0,0,0,0) 72%)}
+.frase p{font-size:clamp(40px,5.8vw,84px);font-weight:300;
+  letter-spacing:-.03em;line-height:1.05;color:var(--off);
+  text-shadow:0 6px 28px rgba(0,0,0,.55)}
+.frase p span{display:block}
+.frase p em{font-style:normal;font-weight:700;color:#ff8f82;
+  text-shadow:0 6px 24px rgba(0,0,0,.65)}
+
+@media(max-width:560px){ input, .btn{font-size:16px} input{height:48px} }
+
+.pular{position:absolute;left:-9999px}
+.pular:focus{left:16px;top:16px;background:var(--off);color:#0e0f12;padding:12px 16px;z-index:50;border-radius:6px}
+
+/* ---------- medidor de senha ---------- */
+.forca{display:flex;gap:4px;margin:9px 0 0}
+.forca i{flex:1;height:3px;border-radius:2px;background:rgba(247,243,243,.16);transition:.2s}
+.forca i.on1{background:#c0564c}.forca i.on2{background:#c4913a}.forca i.on3{background:#4fa06c}
+.forca-txt{margin:6px 0 0;font-size:12px;color:var(--muted-2)}
+.bate{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;
+  display:none;place-items:center;border-radius:50%;background:rgba(79,160,108,.2)}
+.bate.on{display:grid}
+.bate svg{width:11px;height:11px;fill:none;stroke:#6fc08d;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.regra{display:flex;align-items:flex-start;gap:9px;margin:14px 0 0;cursor:pointer}
+.regra input{width:17px;height:17px;flex:none;margin-top:2px;accent-color:var(--primary-light);cursor:pointer}
+.regra span{font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+.feito{text-align:center;padding:8px 0 4px}
+.feito .selo{width:58px;height:58px;margin:0 auto 16px;display:grid;place-items:center;border-radius:50%;
+  background:rgba(79,160,108,.16);border:1px solid rgba(79,160,108,.4)}
+.feito .selo svg{width:27px;height:27px;fill:none;stroke:#6fc08d;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.feito h2{margin:0 0 9px;font:700 21px/1.25 var(--fonte);color:var(--off);letter-spacing:-.02em}
+.feito p{margin:0;font-size:13.5px;line-height:1.65;color:var(--muted)}
+.feito b{color:var(--off)}
+</style>
+</head>
+<body>
+
+<a class="pular" href="#card">Pular para o formulário</a>
+
+<div class="fundo" aria-hidden="true">
+  <span class="bolha b1"></span><span class="bolha b2"></span><span class="bolha b3"></span>
+</div>
+
+<div class="tela">
+  <main class="card" id="card">
+    <div class="topo-card">
+      <a class="marca" href="index.html" aria-label="PersonalHub — início">
+        <img src="../icone-ph.png" alt="">
+        <span class="nome">Personal Hub</span>
+      </a>
+      <span class="pais">🇧🇷 BR</span>
+    </div>
+
+    <div id="miolo">
+      <h1>Criar sua conta</h1>
+      <p class="abertura">Leva um minuto — seus dados do pagamento já vêm preenchidos.</p>
+
+      <div aria-live="polite" id="area-aviso"></div>
+
+      <form id="criar" novalidate>
+        <div class="entrada">
+          <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome" aria-label="Seu nome">
+        </div>
+        <p class="erro" id="erro-nome" role="alert" hidden></p>
+
+        <div class="entrada">
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="Seu melhor e-mail" aria-label="Seu e-mail">
+        </div>
+        <p class="erro" id="erro-email" role="alert" hidden></p>
+
+        <div class="entrada">
+          <input id="telefone" name="telefone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="Celular com DDD" aria-label="Celular com DDD">
+        </div>
+        <p class="erro" id="erro-telefone" role="alert" hidden></p>
+
+        <div class="entrada">
+          <input id="documento" name="documento" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="Seu CPF" aria-label="Seu CPF">
+        </div>
+        <p class="erro" id="erro-documento" role="alert" hidden></p>
+
+        <div class="entrada">
+          <input id="senha" name="senha" type="password" autocomplete="new-password" placeholder="Crie uma senha" aria-label="Crie uma senha">
+          <button class="olho" type="button" id="verSenha" aria-label="Mostrar senha">
+            <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="forca" aria-hidden="true"><i></i><i></i><i></i></div>
+        <p class="forca-txt" id="forcaTxt">Use ao menos 8 caracteres.</p>
+        <p class="erro" id="erro-senha" role="alert" hidden></p>
+
+        <div class="entrada">
+          <input id="senha2" name="senha2" type="password" autocomplete="new-password" placeholder="Repita a senha" aria-label="Repita a senha">
+          <span class="bate" id="bate" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg></span>
+        </div>
+        <p class="erro" id="erro-senha2" role="alert" hidden></p>
+
+        <label class="regra">
+          <input type="checkbox" id="aceite">
+          <span>Li e aceito os Termos de Uso e a Política de Privacidade.</span>
+        </label>
+        <p class="erro" id="erro-aceite" role="alert" hidden></p>
+
+        <button class="btn" type="submit" id="botao">
+          Criar minha conta
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div class="risco"></div>
+      <a class="btn-secundario" href="checkout.html">
+        Ainda não escolheu um plano? <b>Ver planos</b>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <div class="pe" style="margin-top:20px">
+      <a href="index.html#faq">Precisa de ajuda?</a>
+      <a href="index.html#contato">Falar com a gente</a>
+    </div>
+  </main>
+
+  <div class="frase" aria-hidden="true">
+    <p><span>Você já pagou.</span><span>Falta só</span><span><em>a senha.</em></span></p>
+  </div>
+</div>
+
+<script type="module">
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* --------------------------------------------------------- máscara do tel */
+var tel = $('#telefone');
+tel.addEventListener('input', function(){
+  var n = tel.value.replace(/\D/g,'').slice(0,11);
+  tel.value = n.length <= 10
+    ? n.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{4})(\d{1,4})$/,'$1-$2')
+    : n.replace(/(\d{2})(\d)/,'($1) $2').replace(/(\d{5})(\d{1,4})$/,'$1-$2');
+  esconde('telefone');
+});
+var doc = $('#documento');
+doc.addEventListener('input', function(){
+  var n = doc.value.replace(/\D/g,'').slice(0,11);
+  doc.value = n.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+});
+
+/* ---------------------------------------------------------- ver senha */
+var senha = $('#senha'), senha2 = $('#senha2');
+$('#verSenha').addEventListener('click', function(){
+  var mostrando = senha.type === 'text';
+  senha.type = mostrando ? 'password' : 'text';
+  this.setAttribute('aria-label', mostrando ? 'Mostrar senha' : 'Ocultar senha');
+  senha.focus();
+});
+
+/* ------------------------------------------------------ força da senha */
+function forca(v){
+  if (v.length < 8) return 0;
+  var pontos = 0;
+  if (v.length >= 8) pontos++;
+  if (v.length >= 12) pontos++;
+  if (v.length >= 16) pontos++;
+  if (/[^A-Za-z0-9]/.test(v) || (/[A-Za-z]/.test(v) && /\d/.test(v))) pontos++;
+  return Math.min(3, Math.max(1, pontos - 1));
+}
+var TEXTO_FORCA = ['Use ao menos 8 caracteres.','Senha curta — dá para melhorar.','Senha razoável.','Senha boa.'];
+function conferePar(){
+  var bate = senha2.value.length > 0 && senha.value === senha2.value;
+  $('#bate').classList.toggle('on', bate);
+  if (bate) esconde('senha2');
+}
+senha.addEventListener('input', function(){
+  var f = forca(senha.value);
+  document.querySelectorAll('.forca i').forEach(function(b, i){ b.className = i < f ? 'on'+f : ''; });
+  $('#forcaTxt').textContent = TEXTO_FORCA[f];
+  esconde('senha');
+  conferePar();
+});
+senha2.addEventListener('input', conferePar);
+
+/* --------------------------------------------------------- validação */
+function mostra(campo, texto){ var p = $('#erro-'+campo); p.textContent = texto; p.hidden = false; }
+function esconde(campo){ $('#erro-'+campo).hidden = true; }
+var so = function(v){ return (v||'').replace(/\D/g,''); };
+
+function valida(){
+  var bom = true;
+  var nome = $('#nome').value.trim();
+  var email = $('#email').value.trim();
+  if (nome.split(/\s+/).filter(Boolean).length < 1) { mostra('nome','Escreva o seu nome.'); bom = false; } else esconde('nome');
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { mostra('email','Confira o e-mail — parece incompleto.'); bom = false; } else esconde('email');
+  if (so(tel.value).length < 10) { mostra('telefone','Informe o celular com DDD.'); bom = false; } else esconde('telefone');
+  if (so(doc.value).length !== 11) { mostra('documento','Confira o CPF.'); bom = false; } else esconde('documento');
+  if (senha.value.length < 8) { mostra('senha','A senha precisa de ao menos 8 caracteres.'); bom = false; } else esconde('senha');
+  if (senha.value !== senha2.value) { mostra('senha2','As senhas não são iguais.'); bom = false; } else esconde('senha2');
+  if (!$('#aceite').checked) { mostra('aceite','É preciso aceitar os termos para criar a conta.'); bom = false; } else esconde('aceite');
+  return bom;
+}
+
+/* ------------------------------------------------- quem vem do pagamento */
+var PASSE = new URLSearchParams(location.search).get('passe') || '';
+if (PASSE) {
+  fetch('/api/checkout/passe?passe=' + encodeURIComponent(PASSE))
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok) {
+        PASSE = '';
+        $('#area-aviso').innerHTML = '<div class="aviso mau">' + esc(res.j?.error?.message || 'Este link de pagamento não vale mais.') + '</div>';
+        return;
+      }
+      var c = res.j.comprador || {};
+      if (c.nome && !$('#nome').value) $('#nome').value = c.nome;
+      if (c.email && !$('#email').value) $('#email').value = c.email;
+      if (c.telefone && !tel.value) { tel.value = c.telefone; tel.dispatchEvent(new Event('input')); }
+      if (c.documento && !doc.value) { doc.value = c.documento; doc.dispatchEvent(new Event('input')); }
+      senha.focus();
+      var nomePlano = (res.j.plano || {}).nome || '';
+      $('#area-aviso').innerHTML = '<div class="aviso ok">Plano <b>' + esc(nomePlano) + '</b> pago. Crie a senha para entrar na sua conta.</div>';
+    })
+    .catch(function(){ /* servidor mudo: o cadastro continua funcionando */ });
+} else {
+  $('#area-aviso').innerHTML = '<div class="aviso mau">Não achei um pagamento associado a este link. <a href="checkout.html" style="color:#ff8f82">Escolher um plano</a>.</div>';
+}
+
+var botao = $('#botao'), conteudoBotao = botao.innerHTML;
+
+$('#criar').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  if (!PASSE) return;
+  if (!valida()) return;
+
+  botao.disabled = true;
+  botao.innerHTML = '<svg class="girando" viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-6.2-8.6"/></svg> Criando…';
+
+  fetch('/api/conta/criar', {
+    method: 'POST', headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      passe: PASSE, nome: $('#nome').value.trim(), email: $('#email').value.trim(),
+      telefone: so(tel.value), documento: so(doc.value), senha: senha.value,
+    }),
+  })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok) throw new Error(res.j?.error?.message || 'não consegui criar a conta');
+      $('#miolo').innerHTML =
+        '<div class="feito">' +
+          '<div class="selo"><svg viewBox="0 0 24 24"><path d="m5 13 4.2 4.2L19 7.5"/></svg></div>' +
+          '<h2>Conta criada!</h2>' +
+          '<p>Bem-vindo(a), <b>' + esc(res.j.conta.nome) + '</b>. O painel do PersonalHub ainda está sendo construído — assim que estiver pronto, seu acesso já vai estar liberado.</p>' +
+        '</div>';
+    })
+    .catch(function(e){
+      botao.disabled = false; botao.innerHTML = conteudoBotao;
+      var msg = /já tem conta/i.test(e.message)
+        ? 'Este e-mail já tem conta. <a href="index.html" style="color:#ff8f82">Voltar ao início</a>.'
+        : esc(e.message);
+      $('#area-aviso').innerHTML = '<div class="aviso mau">' + msg + '</div>';
+    });
+});
+</script>
+</body>
+</html>
