@@ -217,7 +217,7 @@ input[aria-invalid=true]{border-color:#e0705f}
 </head>
 <body>
 
-<div class="faixa-demo">DEMONSTRAÇÃO — NENHUM PAGAMENTO É PROCESSADO AINDA</div>
+<div class="faixa-demo" id="faixaDemo" hidden>DEMONSTRAÇÃO — NENHUM PAGAMENTO É PROCESSADO AINDA</div>
 
 <a class="pular" href="#card">Pular para o formulário</a>
 
@@ -634,6 +634,15 @@ $("#copiarPix").addEventListener("click", async () => {
 
 pintaSeletor();
 escolhePlano(plano.id);
+
+/* Só mostra a faixa de demonstração quando de fato estamos em modo simulado
+   (sem backend no ar, ou Naut sem chave configurada) — nunca em produção. */
+(async () => {
+  try {
+    const r = await fetch('/api/health').then(x => x.json());
+    if (!r.ok || !r.nautConfigurada) $('#faixaDemo').hidden = false;
+  } catch { $('#faixaDemo').hidden = false; }
+})();
 </script>
 </body>
 </html>
