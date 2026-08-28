@@ -12,6 +12,7 @@
  */
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
@@ -23,6 +24,17 @@ const naut = require('./naut');
 const app = express();
 const PORTA = process.env.PORT || 5501;
 const RAIZ_SITE = path.join(__dirname, '..', 'landing-page');
+
+// Render fica atrás de um proxy reverso (TLS termina lá, não aqui). Sem isso,
+// `req.secure` e o IP do cliente ficam errados, e o cookie de sessão com
+// `secure: true` nunca seria enviado de volta pelo navegador.
+app.set('trust proxy', 1);
+
+// Cabeçalhos de segurança padrão (HSTS, no-sniff, anti-clickjacking, remove
+// o "X-Powered-By: Express", etc). CSP fica desligado de propósito: a landing
+// page usa Tailwind via CDN + Google Fonts + bastante <script> inline, e uma
+// CSP padrão do helmet quebraria tudo isso sem uma allowlist bem calibrada.
+app.use(helmet({ contentSecurityPolicy: false }));
 
 // `verify` guarda o corpo cru em req.rawBody — necessário pra conferir a
 // assinatura HMAC do webhook da Naut (o hash é sobre os bytes originais,

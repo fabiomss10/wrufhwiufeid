@@ -1,9 +1,17 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const contas = require('../contas');
 const sessoes = require('../sessoes');
 const estado = require('../estado');
 
 const router = express.Router();
+
+// Login é o alvo clássico de força bruta de senha — 10 tentativas por IP a
+// cada 15 min é folgado pra uso normal (erro de digitação) e trava um script
+// tentando adivinhar senha. Criar conta não tem senha alheia em jogo, mas
+// limita spam de contas/e-mails.
+const limitadorLogin = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, standardHeaders: true, legacyHeaders: false });
+const limitadorCriarConta = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
 
 /**
  * POST /api/conta/criar
@@ -13,7 +21,7 @@ const router = express.Router();
  * pagou chega até aqui). Sem passe válido e "pago", não cria conta — isso
  * evita cadastro aberto sem ligação nenhuma com uma assinatura.
  */
-router.post('/criar', async (req, res) => {
+router.post('/criar', limitadorCriarConta, async (req, res) => {
   const { passe, nome, email, telefone, documento, senha } = req.body || {};
 
   const registro = passe ? estado.consultar(passe) : null;
@@ -38,7 +46,7 @@ router.post('/criar', async (req, res) => {
 });
 
 /** POST /api/conta/login — Body: { email, senha } */
-router.post('/login', async (req, res) => {
+router.post('/login', limitadorLogin, async (req, res) => {
   const { email, senha } = req.body || {};
   const conta = await contas.verificarLogin(email || '', senha || '');
   if (!conta) return res.status(401).json({ success: false, error: { code: 'CREDENCIAIS_INVALIDAS', message: 'E-mail ou senha incorretos.' } });

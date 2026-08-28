@@ -10,10 +10,12 @@
     "ofertas": "node scripts/listar-ofertas.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "dotenv": "^16.4.5",
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
-    "bcryptjs": "^2.4.3"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^8.6.2",
+    "helmet": "^8.3.0"
   },
   "engines": {
     "node": ">=18"

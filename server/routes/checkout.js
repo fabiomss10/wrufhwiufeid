@@ -1,10 +1,17 @@
 const express = require('express');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const { planoPorId, planoConfigurado } = require('../planos');
 const naut = require('../naut');
 const estado = require('../estado');
 
 const router = express.Router();
+
+// Cada tentativa de cobrança chama a API da Naut — sem limite, um script (ou
+// alguém testando cartão roubado) pode estourar a chave ou gerar centenas de
+// cobranças pendentes. 15 por IP a cada 15 min cobre alguém tentando de
+// verdade (Pix falhou, tenta cartão, etc.) sem abrir a porta pra abuso.
+const limitadorCobrar = rateLimit({ windowMs: 15 * 60 * 1000, max: 15, standardHeaders: true, legacyHeaders: false });
 
 /**
  * POST /api/checkout/cobrar
@@ -14,7 +21,7 @@ const router = express.Router();
  * chave secreta, só manda os dados e recebe de volta o que precisa mostrar
  * (código Pix / QR, ou confirmação imediata de cartão).
  */
-router.post('/cobrar', async (req, res) => {
+router.post('/cobrar', limitadorCobrar, async (req, res) => {
   const { plano: planoId, metodo, comprador, cartao } = req.body || {};
 
   if (!planoId || !metodo || !comprador?.nome || !comprador?.email || !comprador?.documento) {
