@@ -27,3 +27,7 @@ Thumbs.db
 .aiox-core/local/
 .claude/settings.local.json
 .aiox/install-log.txt
+
+# Referência do Felipe (código de outro produto — Soan.ia — não é do PersonalHub)
+soan-telas.zip
+soan-telas/

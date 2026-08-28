@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="icon" href="../icone-ph.png" type="image/png">
+<meta name="theme-color" content="#0e0f12">
+<title>Assinar · PersonalHub</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Escolha o plano do PersonalHub, pague com Pix ou cartão e comece a organizar sua gestão hoje.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+<style>
+/* ===========================================================================
+   CHECKOUT DO PERSONALHUB — estrutura e lógica de interação herdadas do
+   checkout de assinatura que o Felipe validou rodando tráfego real (Soan.ia).
+   Reskin completo pro nosso tema (vermelho/preto/Satoshi); a UX (dois passos,
+   troca de plano sem recarregar, QR sobre fundo branco, etc.) foi mantida
+   porque já foi testada em produção.
+
+   FASE ATUAL: só o design/fluxo. O envio ainda não fala com nenhum gateway —
+   os planos estão fixos aqui embaixo e o "pagamento" é simulado, com aviso
+   claro na tela. A integração com a Naut entra depois, num passo separado.
+   =========================================================================== */
+:root{
+  --obsidiana:#0e0f12; --obsidiana-2:#17181d;
+  --primary:#E2312A; --primary-light:#E5403E; --primary-dark:#882828;
+  --off:#F7F3F3; --muted:rgba(247,243,243,.72); --muted-2:rgba(247,243,243,.5);
+  --stroke:rgba(247,243,243,.13);
+  --fonte:'Satoshi','Hubot Sans',system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fonte);background:#0b0b0d;color:var(--off);
+  -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.6;
+  min-height:100svh;position:relative;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input,select{font:inherit;color:inherit}
+
+.fundo{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0b0b0d}
+.bolha{position:absolute;border-radius:50%;filter:blur(90px);opacity:.85}
+.b1{width:60vw;height:60vw;right:-14vw;top:-22vw;
+  background:radial-gradient(circle at 40% 40%, var(--primary-light) 0%, var(--primary-dark) 42%, rgba(136,40,40,0) 72%)}
+.b2{width:44vw;height:44vw;right:6vw;top:6vw;
+  background:radial-gradient(circle at 50% 50%, #ff6b5b 0%, rgba(255,107,91,.35) 45%, rgba(255,107,91,0) 70%);opacity:.5}
+.b3{width:52vw;height:52vw;left:-18vw;bottom:-20vw;
+  background:radial-gradient(circle at 60% 40%, var(--primary) 0%, #4a1616 45%, rgba(74,22,22,0) 72%)}
+.b4{width:30vw;height:30vw;left:4vw;top:34vh;
+  background:radial-gradient(circle at 50% 50%, rgba(226,49,42,.5) 0%, rgba(226,49,42,0) 68%)}
+@media(max-width:900px){.bolha{filter:blur(70px)}}
+
+.tela{position:relative;z-index:1;min-height:100svh;display:grid;
+  grid-template-columns:minmax(0,860px) minmax(0,1fr);align-items:center;gap:40px;
+  padding:48px 40px}
+@media(max-width:1100px){.tela{grid-template-columns:minmax(0,1fr);justify-items:center;padding:40px 22px}}
+
+.card{width:100%;max-width:452px;min-width:0;margin-left:96px;padding:34px;
+  background:rgba(14,15,18,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--stroke);border-radius:20px;
+  box-shadow:0 30px 90px rgba(0,0,0,.55)}
+@media(max-width:1100px){.card{margin-left:0}}
+@media(max-width:520px){.card{padding:26px 20px}}
+
+.topo-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:30px}
+.marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
+.marca img{width:30px;height:30px;border-radius:8px;display:block}
+.marca .nome{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.pais{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+  border:1px solid var(--stroke);border-radius:8px;font-size:12.5px;color:var(--muted)}
+
+h1{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.abertura{margin-top:9px;font-size:13.5px;color:var(--muted-2);line-height:1.55;max-width:340px}
+
+/* ---------- escolher o plano ----------
+   Botões, não link "trocar de plano" — trocar de ideia sobre quanto pagar é
+   comum, e recarregar a página no meio perderia o que já foi digitado. */
+.planos-escolha{display:grid;gap:10px;margin-top:22px}
+.plano-op{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 16px;border-radius:12px;cursor:pointer;text-align:left;
+  border:2px solid rgba(247,243,243,.125);background:transparent;transition:.16s}
+.plano-op:hover{border-color:rgba(247,243,243,.3)}
+.plano-op.on{border-color:var(--primary-light);background:rgba(226,49,42,.14)}
+.plano-op .esq{min-width:0}
+.plano-op .esq b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.plano-op .esq span{display:block;margin-top:2px;font-size:12px;color:var(--muted-2)}
+.plano-op .dir{text-align:right;flex:none}
+.plano-op .dir b{font-size:19px;font-weight:700;letter-spacing:-.025em}
+.plano-op .dir span{display:block;font-size:11px;color:var(--muted-2)}
+.selo-rec{display:inline-block;margin-right:6px;padding:1px 7px;border-radius:999px;
+  background:var(--primary-light);color:#fff;font-size:10.5px;font-weight:700;font-style:normal}
+
+/* ---------- passos ---------- */
+.passo{display:inline-block;margin-bottom:10px;padding:4px 10px;border-radius:999px;
+  background:rgba(247,243,243,.07);font-size:11.5px;font-weight:700;color:var(--muted-2);
+  letter-spacing:.02em}
+.voltar{display:inline-flex;align-items:center;gap:7px;margin-bottom:14px;padding:0;
+  background:none;border:0;font-size:13px;color:var(--muted-2);cursor:pointer;transition:color .2s}
+.voltar:hover{color:var(--off)}
+.voltar svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- forma de pagamento ---------- */
+.metodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.metodo{display:flex;align-items:center;gap:10px;padding:13px 14px;border-radius:11px;cursor:pointer;
+  border:2px solid rgba(247,243,243,.125);background:transparent;text-align:left;transition:.16s}
+.metodo:hover{border-color:rgba(247,243,243,.3)}
+.metodo.on{border-color:var(--primary-light);background:rgba(226,49,42,.14)}
+.metodo svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;color:var(--primary-light)}
+.metodo svg.cheio{fill:currentColor;stroke:none}
+.metodo b{display:block;font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+.metodo span{display:block;font-size:11.5px;color:var(--muted-2)}
+
+form{margin-top:22px;display:flex;flex-direction:column;gap:13px}
+.so-cartao{display:none;flex-direction:column;gap:13px}
+.so-cartao.on{display:flex}
+select{width:100%;height:45px;padding:0 12px;background:rgba(14,15,18,.9);
+  border:2px solid rgba(247,243,243,.125);border-radius:8px;font-size:15px;color:var(--off);
+  outline:none;cursor:pointer}
+select:focus{border-color:var(--primary-light)}
+select option{font-size:15px;background:#0e0f12;color:var(--off);padding:8px}
+.tripla{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+.dupla{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:520px){.dupla{grid-template-columns:1fr}}
+input{width:100%;height:45px;padding:0 15px;background:transparent;
+  border:2px solid rgba(247,243,243,.125);border-radius:8px;font-size:15px;color:var(--off);
+  outline:none;transition:border-color .2s}
+input::placeholder{color:rgba(247,243,243,.4)}
+input:focus{border-color:var(--primary-light)}
+input[aria-invalid=true]{border-color:#e0705f}
+.rot{display:block;margin-bottom:6px;font-size:12.5px;color:var(--muted-2)}
+
+.btn{margin-top:5px;width:100%;height:53px;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(90deg,var(--primary-light),var(--primary-dark));color:#fff;border:0;border-radius:8px;
+  font-size:15px;font-weight:700;cursor:pointer;transition:filter .2s,transform .12s;
+  box-shadow:0 10px 28px -8px rgba(226,49,42,.55)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn.claro{background:var(--off);color:#0e0f12;box-shadow:none}
+.btn.claro:hover{background:#fff}
+
+.nota{margin-top:14px;font-size:12px;color:var(--muted-2);line-height:1.55}
+.risco{height:1px;background:var(--stroke);margin:24px 0 18px}
+.total{display:flex;align-items:baseline;justify-content:space-between;gap:14px;font-size:14px;color:var(--muted)}
+.total b{font-size:21px;font-weight:700;color:var(--off);letter-spacing:-.02em}
+.aviso{margin-top:16px;padding:14px 16px;border:1px solid var(--stroke);border-radius:10px;
+  background:rgba(247,243,243,.04);font-size:13px;color:var(--muted);line-height:1.6}
+.aviso.mau{border-color:rgba(224,112,95,.45);background:rgba(224,112,95,.1)}
+
+/* ---------- pix ----------
+   QR sobre branco: leitor de câmera precisa do contraste. */
+.relogio{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:6px 13px;
+  border-radius:999px;background:rgba(224,168,60,.14);color:#e0b45f;font-size:12.5px;font-weight:700}
+.relogio.acabando{background:rgba(224,112,95,.16);color:#e89383}
+.relogio b{font-variant-numeric:tabular-nums}
+.qr{width:216px;height:216px;margin:20px auto 0;border-radius:14px;background:#fff;padding:10px;
+  display:grid;place-items:center;text-align:center}
+.qr img{width:100%;height:100%;display:block}
+.qr span{font-size:12px;color:#7a7a7a;padding:0 16px;line-height:1.45}
+.copia{margin-top:20px}
+.copia .campo{display:flex;gap:8px}
+.copia code{flex:1 1 0;min-width:0;padding:12px 13px;border:1px solid var(--stroke);border-radius:8px;
+  background:rgba(247,243,243,.05);font-family:ui-monospace,"SF Mono",monospace;font-size:12px;
+  color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copia button{flex:none;padding:0 18px;border:0;border-radius:8px;background:var(--off);color:#0e0f12;
+  font-size:13.5px;font-weight:700;cursor:pointer;transition:.15s}
+.copia button:hover{background:#fff}
+.copia button.feito{background:#4fa06c;color:#fff}
+.esperando{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:20px;padding:13px;
+  border-radius:10px;background:rgba(247,243,243,.04);font-size:13.5px;color:var(--muted)}
+.girando{width:15px;height:15px;flex:none;border:2px solid rgba(247,243,243,.18);
+  border-top-color:var(--primary-light);border-radius:50%;animation:gira .8s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.girando{animation-duration:2.4s}}
+
+/* ---------- pronto ---------- */
+.feito{text-align:center;padding:6px 0 4px}
+.feito .selo{width:58px;height:58px;margin:0 auto 16px;display:grid;place-items:center;border-radius:50%;
+  background:rgba(79,160,108,.16);border:1px solid rgba(79,160,108,.4)}
+.feito .selo svg{width:27px;height:27px;fill:none;stroke:#6fc08d;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.feito h2{margin:0 0 9px;font:700 21px/1.25 var(--fonte);color:var(--off);letter-spacing:-.02em}
+.feito p{margin:0;font-size:13.5px;line-height:1.65;color:var(--muted)}
+.guarde{margin-top:18px;padding:12px 14px;border-radius:9px;background:rgba(247,243,243,.04);
+  border:1px solid var(--stroke);font-size:12px;color:var(--muted-2);line-height:1.6}
+.guarde b{display:block;margin-top:5px;color:var(--muted);font-weight:500;word-break:break-all}
+
+.pe{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-top:20px;font-size:13.5px;font-weight:500}
+.pe a{color:var(--muted);transition:color .2s;display:inline-flex;align-items:center;gap:7px;min-height:44px}
+.pe a:hover{color:var(--off)}
+
+.frase{justify-self:center;max-width:640px}
+@media(max-width:1100px){.frase{display:none}}
+.frase p{font-size:clamp(40px,5.8vw,84px);font-weight:300;
+  letter-spacing:-.03em;line-height:1.05;color:var(--off)}
+.frase p span{display:block}
+.frase p em{font-style:normal;font-weight:700;color:var(--primary-light)}
+
+@media(max-width:560px){
+  input, select, select option, .btn{font-size:16px}
+  select{height:48px}
+  input{height:48px}
+}
+
+.etapa{display:none}
+.etapa.on{display:block}
+.pular{position:absolute;left:-9999px}
+.pular:focus{left:16px;top:16px;background:var(--off);color:#0e0f12;padding:12px 16px;z-index:50;border-radius:6px}
+
+.faixa-demo{position:relative;z-index:2;text-align:center;font-size:12px;font-weight:700;
+  letter-spacing:.03em;color:var(--muted-2);background:rgba(0,0,0,.5);padding:8px 12px;
+  border-bottom:1px solid var(--stroke)}
+</style>
+</head>
+<body>
+
+<div class="faixa-demo">DEMONSTRAÇÃO — NENHUM PAGAMENTO É PROCESSADO AINDA</div>
+
+<a class="pular" href="#card">Pular para o formulário</a>
+
+<div class="fundo" aria-hidden="true">
+  <span class="bolha b1"></span><span class="bolha b2"></span>
+  <span class="bolha b3"></span><span class="bolha b4"></span>
+</div>
+
+<div class="tela">
+  <main class="card" id="card">
+    <div class="topo-card">
+      <a class="marca" href="index.html" aria-label="PersonalHub — início">
+        <img src="../icone-ph.png" alt="">
+        <span class="nome">Personal Hub</span>
+      </a>
+      <span class="pais">🇧🇷 BR</span>
+    </div>
+
+    <!-- --------------------------------------------- 1. quem está assinando -->
+    <section class="etapa on" id="etDados">
+      <span class="passo">Passo 1 de 2</span>
+      <h1 id="tituloPlano">Assinar o PersonalHub</h1>
+      <p class="abertura">Escolha o plano e diga quem você é. O pagamento é no passo seguinte.</p>
+
+      <div class="planos-escolha" id="seletorPlano" role="group" aria-label="Escolha o plano"></div>
+
+      <form id="formDados" novalidate>
+        <div>
+          <span class="rot">Nome completo</span>
+          <input id="cNome" type="text" placeholder="Seu nome" autocomplete="name">
+        </div>
+        <div>
+          <span class="rot">E-mail</span>
+          <input id="cEmail" type="email" placeholder="voce@email.com" autocomplete="email" inputmode="email">
+        </div>
+        <div class="dupla">
+          <div>
+            <span class="rot">CPF</span>
+            <input id="cCpf" inputmode="numeric" placeholder="000.000.000-00" maxlength="14" autocomplete="off">
+          </div>
+          <div>
+            <span class="rot">Telefone</span>
+            <input id="cTel" inputmode="tel" placeholder="(00) 00000-0000" maxlength="15" autocomplete="tel">
+          </div>
+        </div>
+
+        <button class="btn" type="submit">
+          Continuar para o pagamento
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div aria-live="polite" id="areaAviso"></div>
+
+      <p class="nota">Seus dados são usados para emitir a cobrança e criar a sua conta. O CPF é exigido
+        pelo banco e não aparece no cadastro.</p>
+    </section>
+
+    <!-- ------------------------------------------------ 2. como vai pagar -->
+    <section class="etapa" id="etPagar">
+      <button class="voltar" type="button" id="btVoltar">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Voltar aos seus dados
+      </button>
+      <span class="passo">Passo 2 de 2</span>
+      <h1>Como você quer pagar</h1>
+      <p class="abertura" id="aberturaPag">Pague com Pix e sua conta é criada em seguida — os dados do
+        passo anterior já vão preenchidos.</p>
+
+      <div class="metodos" role="group" aria-label="Forma de pagamento">
+        <button class="metodo on" type="button" data-metodo="pix">
+          <svg viewBox="0 0 24 24" class="cheio"><path d="M5.283 18.36a3.505 3.505 0 0 0 2.493-1.032l3.6-3.6a.684.684 0 0 1 .946 0l3.613 3.613a3.504 3.504 0 0 0 2.493 1.032h.71l-4.56 4.56a3.647 3.647 0 0 1-5.156 0L4.85 18.36ZM18.428 5.627a3.505 3.505 0 0 0-2.493 1.032l-3.613 3.614a.67.67 0 0 1-.946 0l-3.6-3.6A3.505 3.505 0 0 0 5.283 5.64h-.434l4.573-4.572a3.646 3.646 0 0 1 5.156 0l4.559 4.559ZM1.068 9.422 3.79 6.699h1.492a2.483 2.483 0 0 1 1.744.722l3.6 3.6a1.73 1.73 0 0 0 2.443 0l3.614-3.613a2.482 2.482 0 0 1 1.744-.723h1.767l2.737 2.737a3.646 3.646 0 0 1 0 5.156l-2.736 2.736h-1.768a2.482 2.482 0 0 1-1.744-.722l-3.613-3.613a1.77 1.77 0 0 0-2.444 0l-3.6 3.6a2.483 2.483 0 0 1-1.744.722H3.791l-2.723-2.723a3.646 3.646 0 0 1 0-5.156"/></svg>
+          <span><b>Pix</b><span>Libera na hora</span></span>
+        </button>
+        <button class="metodo" type="button" data-metodo="credit_card">
+          <svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.6"/><path d="M2.5 10h19M6 15h3"/></svg>
+          <span><b>Cartão</b><span>Em até 12x</span></span>
+        </button>
+      </div>
+
+      <form id="formPag" novalidate>
+        <div class="so-cartao" id="camposCartao">
+          <div>
+            <span class="rot">Número do cartão</span>
+            <input id="kNumero" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="23" autocomplete="cc-number">
+          </div>
+          <div>
+            <span class="rot">Nome como está no cartão</span>
+            <input id="kTitular" type="text" placeholder="NOME COMO NO CARTAO" autocomplete="cc-name" style="text-transform:uppercase">
+          </div>
+          <div class="tripla">
+            <div>
+              <span class="rot">Mês</span>
+              <input id="kMes" inputmode="numeric" placeholder="MM" maxlength="2" autocomplete="cc-exp-month">
+            </div>
+            <div>
+              <span class="rot">Ano</span>
+              <input id="kAno" inputmode="numeric" placeholder="AA" maxlength="4" autocomplete="cc-exp-year">
+            </div>
+            <div>
+              <span class="rot">CVV</span>
+              <input id="kCvv" inputmode="numeric" placeholder="000" maxlength="4" autocomplete="cc-csc">
+            </div>
+          </div>
+          <div>
+            <span class="rot">Parcelas</span>
+            <select id="kParcelas"></select>
+          </div>
+        </div>
+
+        <button class="btn" type="submit" id="gerarPix">
+          <span id="rotuloBotao">Gerar Pix e assinar</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <div aria-live="polite" id="areaAvisoPag"></div>
+
+      <p class="nota" id="notaPag">O pagamento é processado com criptografia de ponta a ponta.</p>
+
+      <div class="risco"></div>
+      <div class="total"><span>Total</span><b id="totalPagar">—</b></div>
+    </section>
+
+    <!-- -------------------------------------------------------- 3. pix -->
+    <section class="etapa" id="etPix">
+      <h1>Pague para começar</h1>
+      <p class="abertura">Abra o app do seu banco, escaneie o código e o acesso libera na hora.</p>
+      <div style="text-align:center"><span class="relogio" id="relogio">expira em <b>15:00</b></span></div>
+
+      <div class="qr" id="qr"><span>gerando o código…</span></div>
+
+      <div class="copia">
+        <span class="rot">Pix copia e cola</span>
+        <div class="campo">
+          <code id="codigoPix">—</code>
+          <button type="button" id="copiarPix">Copiar</button>
+        </div>
+      </div>
+
+      <div class="esperando">
+        <span class="girando"></span>
+        <span id="statusPix">Aguardando o pagamento…</span>
+      </div>
+
+      <div class="risco"></div>
+      <div class="total"><span>Total</span><b id="totalPix">—</b></div>
+    </section>
+
+    <!-- ----------------------------------------------------- 4. pronto -->
+    <section class="etapa" id="etPronto">
+      <div class="feito">
+        <div class="selo"><svg viewBox="0 0 24 24"><path d="m5 13 4.2 4.2L19 7.5"/></svg></div>
+        <h2>Assinatura confirmada</h2>
+        <p id="prontoSub">Agora é criar a sua conta — leva menos de um minuto.</p>
+        <a class="btn" style="margin-top:22px" id="irCriarConta" href="index.html">
+          Criar minha conta
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <div class="pe">
+      <a href="index.html#faq">Precisa de ajuda?</a>
+      <a href="index.html#contato">Falar com a gente</a>
+    </div>
+  </main>
+
+  <div class="frase" aria-hidden="true">
+    <p><span>Sua gestão.</span><span>No <em>piloto</em></span><span><em>automático.</em></span></p>
+  </div>
+</div>
+
+<script type="module">
+/* PLANOS FIXOS AQUI POR ENQUANTO. Quando a integração com a Naut entrar, isso
+   vira uma chamada a algo como `/api/planos` (mesma ideia do Felipe: preço
+   escrito em um lugar só, pro site e pro checkout nunca discordarem). */
+const PLANOS = [
+  { id: "essencial",    nome: "Essencial",    centavos: 6790,  detalhe: "Até 10 alunos" },
+  { id: "profissional", nome: "Profissional", centavos: 24990, detalhe: "Até 50 alunos", recomendado: true },
+  { id: "ilimitado",    nome: "Ilimitado",    centavos: 39790, detalhe: "Alunos ilimitados" },
+];
+
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const reais = (centavos) => (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const QUAL = (new URLSearchParams(location.search).get("plano") || "profissional").toLowerCase();
+let plano = PLANOS.find(p => p.id === QUAL) || PLANOS.find(p => p.recomendado) || PLANOS[0];
+let idPagamento = "", codigoPix = "";
+let relogio = null, olho = null;
+let metodo = "pix";
+
+const mostra = (qual) => {
+  ["etDados", "etPagar", "etPix", "etPronto"].forEach(id =>
+    document.getElementById(id).classList.toggle("on", id === qual));
+  window.scrollTo({ top: 0, behavior: "instant" });
+};
+
+const aviso = (texto, mau, onde) => {
+  const alvo = $(onde || "#areaAviso");
+  alvo.innerHTML = texto ? `<div class="aviso${mau ? " mau" : ""}">${esc(texto)}</div>` : "";
+};
+
+function pintaSeletor(){
+  $("#seletorPlano").innerHTML = PLANOS.map((x) => `
+    <button class="plano-op" type="button" data-plano="${esc(x.id)}">
+      <span class="esq">
+        <b>${esc(x.nome)} · Mensal</b>
+        <span>${x.recomendado ? `<i class="selo-rec">mais escolhido</i> ` : ""}cobrado todo mês</span>
+      </span>
+      <span class="dir">
+        <b>${reais(x.centavos)}</b>
+        <span>por mês</span>
+      </span>
+    </button>`).join("");
+  $("#seletorPlano").querySelectorAll("[data-plano]").forEach(b =>
+    b.addEventListener("click", () => escolhePlano(b.dataset.plano)));
+}
+
+function escolhePlano(id){
+  plano = PLANOS.find(x => x.id === id) || plano;
+  $("#seletorPlano").querySelectorAll("[data-plano]").forEach(b =>
+    b.classList.toggle("on", b.dataset.plano === plano.id));
+  $("#tituloPlano").textContent = `Assinar o plano ${plano.nome}`;
+  $("#totalPix").textContent = reais(plano.centavos);
+  pintaTotalCartao();
+  history.replaceState(null, "", `?plano=${plano.id}`);
+}
+
+function pintaTotalCartao(){
+  $("#totalPagar").textContent = reais(plano.centavos);
+  const opcoes = [1, 2, 3, 6, 12].map(n =>
+    `<option value="${n}">${n}x de ${reais(Math.round(plano.centavos / n))}${n > 1 ? " com juros" : ""}</option>`).join("");
+  $("#kParcelas").innerHTML = opcoes;
+}
+
+/* ---------------------------------------------------- passo 1 → passo 2 */
+$("#formDados").addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const falta = !$("#cNome").value.trim() ? "seu nome"
+              : !$("#cEmail").value.includes("@") ? "um e-mail válido"
+              : $("#cCpf").value.replace(/\D/g, "").length !== 11 ? "o CPF completo" : "";
+  if (falta) return aviso("Preencha " + falta + " para continuar.", true);
+  aviso("");
+  mostra("etPagar");
+});
+
+$("#btVoltar").addEventListener("click", () => { aviso("", false, "#areaAvisoPag"); mostra("etDados"); });
+
+/* ------------------------------------------------- forma de pagamento */
+function trocaMetodo(qual){
+  metodo = qual;
+  document.querySelectorAll(".metodo").forEach(b => b.classList.toggle("on", b.dataset.metodo === qual));
+  $("#camposCartao").classList.toggle("on", qual === "credit_card");
+  $("#rotuloBotao").textContent = qual === "credit_card" ? "Pagar e assinar" : "Gerar Pix e assinar";
+  $("#aberturaPag").textContent = qual === "credit_card"
+    ? "A aprovação sai na hora e sua conta é criada em seguida."
+    : "Pague com Pix e sua conta é criada em seguida — os dados do passo anterior já vão preenchidos.";
+  $("#notaPag").textContent = qual === "credit_card"
+    ? "Parcelamento com juros. Os dados do cartão são usados só para esta cobrança e não ficam guardados — só os quatro últimos dígitos."
+    : "O pagamento é processado com criptografia de ponta a ponta.";
+  aviso("", false, "#areaAvisoPag");
+}
+document.querySelectorAll(".metodo").forEach(b => b.addEventListener("click", () => trocaMetodo(b.dataset.metodo)));
+$("#kParcelas").addEventListener("change", pintaTotalCartao);
+
+/* máscaras */
+$("#cCpf").addEventListener("input", (e) => {
+  const n = e.target.value.replace(/\D/g, "").slice(0, 11);
+  e.target.value = n.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+});
+$("#cTel").addEventListener("input", (e) => {
+  const n = e.target.value.replace(/\D/g, "").slice(0, 11);
+  e.target.value = n.length > 10 ? n.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3") : n.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+});
+$("#kNumero").addEventListener("input", (e) => {
+  const n = e.target.value.replace(/\D/g, "").slice(0, 19);
+  e.target.value = n.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+});
+["#kMes", "#kAno", "#kCvv"].forEach(id => $(id).addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, ""); }));
+
+/* ------------------------------------------------------------ cobrança
+   SIMULADA POR ENQUANTO. Quando a Naut entrar, isto vira um POST real pra
+   um endpoint nosso (que fala com a Naut do lado do servidor — a chave
+   secreta nunca chega no navegador), igual ao `/api/assinatura/cobrar` que
+   o Felipe já usa no Soan.ia. */
+$("#formPag").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const b = $("#gerarPix");
+  aviso("", false, "#areaAvisoPag");
+  if (metodo === "credit_card") {
+    const falta = $("#kNumero").value.replace(/\D/g, "").length < 13 ? "o número do cartão"
+                : $("#kTitular").value.trim().length < 2 ? "o nome como está no cartão"
+                : $("#kMes").value.length !== 2 ? "o mês de validade (MM)"
+                : ![2, 4].includes($("#kAno").value.length) ? "o ano de validade"
+                : ![3, 4].includes($("#kCvv").value.length) ? "o CVV" : "";
+    if (falta) return aviso("Preencha " + falta + " para continuar.", true, "#areaAvisoPag");
+  }
+
+  b.disabled = true;
+  const antes = b.innerHTML;
+  b.innerHTML = metodo === "credit_card" ? "Autorizando…" : "Gerando Pix…";
+  await new Promise(r => setTimeout(r, 700));
+
+  if (metodo === "credit_card") {
+    b.disabled = false; b.innerHTML = antes;
+    return pronto();
+  }
+
+  idPagamento = "demo-" + Date.now();
+  codigoPix = "00020126580014BR.GOV.BCB.PIX0136demo-personalhub-nao-e-real-520400005303986540" + (plano.centavos / 100).toFixed(2).replace(".", "") + "5802BR5913PersonalHub6009SAO PAULO62070503***6304ABCD";
+  $("#codigoPix").textContent = codigoPix;
+  $("#totalPix").textContent = reais(plano.centavos);
+  $("#qr").innerHTML = `<span>QR ilustrativo — a geração real do código Pix entra com a integração da Naut.</span>`;
+
+  b.disabled = false; b.innerHTML = antes;
+  mostra("etPix");
+  esperaPagamento();
+});
+
+function esperaPagamento(){
+  clearInterval(relogio); clearInterval(olho);
+  let resta = 15 * 60;
+  const pinta = () => {
+    const m = String(Math.floor(resta / 60)).padStart(2, "0");
+    const s = String(resta % 60).padStart(2, "0");
+    $("#relogio").innerHTML = `expira em <b>${m}:${s}</b>`;
+    $("#relogio").classList.toggle("acabando", resta < 120);
+  };
+  pinta();
+  relogio = setInterval(() => { resta--; pinta(); if (resta <= 0) clearInterval(relogio); }, 1000);
+
+  /* Simulação: em produção, quem confirma é o webhook da Naut — esta tela só
+     pergunta ao nosso servidor, de tempos em tempos, nunca direto à Naut. */
+  olho = setTimeout(() => {
+    clearInterval(relogio);
+    $("#statusPix").textContent = "Pagamento identificado!";
+    setTimeout(pronto, 900);
+  }, 6000);
+}
+
+function pronto(){
+  $("#prontoSub").textContent = `Plano ${plano.nome} ativo. Agora é criar a sua conta — leva menos de um minuto.`;
+  mostra("etPronto");
+}
+
+$("#copiarPix").addEventListener("click", async () => {
+  const b = $("#copiarPix");
+  try { await navigator.clipboard.writeText(codigoPix); } catch {}
+  b.textContent = "Copiado";
+  b.classList.add("feito");
+  setTimeout(() => { b.textContent = "Copiar"; b.classList.remove("feito"); }, 1800);
+});
+
+pintaSeletor();
+escolhePlano(plano.id);
+</script>
+</body>
+</html>
