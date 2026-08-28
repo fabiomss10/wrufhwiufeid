@@ -22,7 +22,11 @@ const app = express();
 const PORTA = process.env.PORT || 5501;
 const RAIZ_SITE = path.join(__dirname, '..', 'landing-page');
 
-app.use(express.json());
+// `verify` guarda o corpo cru em req.rawBody — necessário pra conferir a
+// assinatura HMAC do webhook da Naut (o hash é sobre os bytes originais,
+// não sobre o objeto já parseado de volta pra string, que pode não bater
+// byte a byte com o que a Naut assinou).
+app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
 
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/webhooks', webhookRoutes);
