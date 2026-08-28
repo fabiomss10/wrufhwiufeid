@@ -21,8 +21,8 @@ router.post('/criar', async (req, res) => {
     return res.status(403).json({ success: false, error: { code: 'PASSE_INVALIDO', message: 'Link de pagamento inválido ou expirado.' } });
   }
 
-  if (!nome?.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email || '') || !telefone || (senha || '').length < 8) {
-    return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Confira os dados e a senha (mínimo 8 caracteres).' } });
+  if (!nome?.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email || '') || !telefone || (senha || '').length < 6) {
+    return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Confira os dados e a senha (mínimo 6 caracteres).' } });
   }
 
   try {
