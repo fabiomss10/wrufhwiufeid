@@ -1,0 +1,19 @@
+{
+  "name": "personalhub-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend do checkout do PersonalHub — API de cobrança + webhook da Naut, servindo também o site estático.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "ofertas": "node scripts/listar-ofertas.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

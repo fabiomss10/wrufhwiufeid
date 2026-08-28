@@ -501,10 +501,11 @@ $("#kNumero").addEventListener("input", (e) => {
 ["#kMes", "#kAno", "#kCvv"].forEach(id => $(id).addEventListener("input", (e) => { e.target.value = e.target.value.replace(/\D/g, ""); }));
 
 /* ------------------------------------------------------------ cobrança
-   SIMULADA POR ENQUANTO. Quando a Naut entrar, isto vira um POST real pra
-   um endpoint nosso (que fala com a Naut do lado do servidor — a chave
-   secreta nunca chega no navegador), igual ao `/api/assinatura/cobrar` que
-   o Felipe já usa no Soan.ia. */
+   Tenta o backend de verdade (server/routes/checkout.js -> Naut). Se ele não
+   responder (site publicado só como estático, sem o servidor Node rodando)
+   ou responder "NAUT_NOT_CONFIGURED" (chaves/oferta ainda não cadastradas),
+   cai automaticamente no modo demonstração — a tela continua navegável pra
+   revisão de design mesmo sem a integração ligada. */
 $("#formPag").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const b = $("#gerarPix");
@@ -521,25 +522,67 @@ $("#formPag").addEventListener("submit", async (ev) => {
   b.disabled = true;
   const antes = b.innerHTML;
   b.innerHTML = metodo === "credit_card" ? "Autorizando…" : "Gerando Pix…";
-  await new Promise(r => setTimeout(r, 700));
 
+  const corpo = {
+    plano: plano.id,
+    metodo,
+    comprador: {
+      nome: $("#cNome").value, email: $("#cEmail").value,
+      documento: $("#cCpf").value, telefone: $("#cTel").value,
+    },
+  };
+  if (metodo === "credit_card") {
+    corpo.cartao = {
+      numero: $("#kNumero").value, titular: $("#kTitular").value,
+      mes: $("#kMes").value, ano: $("#kAno").value, cvv: $("#kCvv").value,
+      parcelas: Number($("#kParcelas").value || 1),
+    };
+  }
+
+  let real = null;
+  try {
+    const r = await fetch("/api/checkout/cobrar", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(corpo),
+    });
+    const j = await r.json();
+    if (r.ok && j.success) real = j;
+    else if (j?.error?.code !== "NAUT_NOT_CONFIGURED") throw new Error(j?.error?.message || "não consegui cobrar");
+  } catch (e) {
+    // sem backend no ar (site estático) ou erro de rede — segue pro modo demonstração
+  }
+
+  if (real) {
+    idPagamento = real.id;
+    if (metodo === "credit_card" && real.status === "completed") {
+      b.disabled = false; b.innerHTML = antes;
+      return pronto();
+    }
+    codigoPix = real.copiaecola || "";
+    $("#codigoPix").textContent = codigoPix || "—";
+    $("#totalPix").textContent = reais(real.valor || plano.centavos);
+    $("#qr").innerHTML = real.qr ? `<img src="${real.qr}" alt="QR Code do Pix">` : `<span>Código gerado — use o Pix copia e cola abaixo.</span>`;
+    b.disabled = false; b.innerHTML = antes;
+    mostra("etPix");
+    return esperaPagamento(true);
+  }
+
+  // ---- modo demonstração (sem backend / sem chaves da Naut ainda) ----
+  await new Promise(r => setTimeout(r, 700));
   if (metodo === "credit_card") {
     b.disabled = false; b.innerHTML = antes;
     return pronto();
   }
-
   idPagamento = "demo-" + Date.now();
   codigoPix = "00020126580014BR.GOV.BCB.PIX0136demo-personalhub-nao-e-real-520400005303986540" + (plano.centavos / 100).toFixed(2).replace(".", "") + "5802BR5913PersonalHub6009SAO PAULO62070503***6304ABCD";
   $("#codigoPix").textContent = codigoPix;
   $("#totalPix").textContent = reais(plano.centavos);
   $("#qr").innerHTML = `<span>QR ilustrativo — a geração real do código Pix entra com a integração da Naut.</span>`;
-
   b.disabled = false; b.innerHTML = antes;
   mostra("etPix");
-  esperaPagamento();
+  esperaPagamento(false);
 });
 
-function esperaPagamento(){
+function esperaPagamento(realBackend){
   clearInterval(relogio); clearInterval(olho);
   let resta = 15 * 60;
   const pinta = () => {
@@ -551,13 +594,29 @@ function esperaPagamento(){
   pinta();
   relogio = setInterval(() => { resta--; pinta(); if (resta <= 0) clearInterval(relogio); }, 1000);
 
-  /* Simulação: em produção, quem confirma é o webhook da Naut — esta tela só
-     pergunta ao nosso servidor, de tempos em tempos, nunca direto à Naut. */
-  olho = setTimeout(() => {
-    clearInterval(relogio);
-    $("#statusPix").textContent = "Pagamento identificado!";
-    setTimeout(pronto, 900);
-  }, 6000);
+  if (!realBackend) {
+    // Simulação: sem backend real, confirma sozinho depois de alguns segundos
+    // só pra dar pra ver a tela seguinte durante revisão de design.
+    olho = setTimeout(() => {
+      clearInterval(relogio);
+      $("#statusPix").textContent = "Pagamento identificado!";
+      setTimeout(pronto, 900);
+    }, 6000);
+    return;
+  }
+
+  /* QUEM CONFIRMA É O WEBHOOK da Naut — esta tela só pergunta ao NOSSO
+     servidor, de quatro em quatro segundos, nunca direto à Naut. */
+  olho = setInterval(async () => {
+    try {
+      const e = await fetch(`/api/checkout/estado?id=${encodeURIComponent(idPagamento)}`).then(x => x.json());
+      if (e.estado !== "pago") return;
+      clearInterval(olho); olho = null;
+      clearInterval(relogio);
+      $("#statusPix").textContent = "Pagamento identificado!";
+      setTimeout(pronto, 900);
+    } catch { /* falha de rede não derruba a espera */ }
+  }, 4000);
 }
 
 function pronto(){
