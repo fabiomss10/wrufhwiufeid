@@ -11,7 +11,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&display=swap" rel="stylesheet">
+<!-- Candidatas de fonte (temporário — sai quando a escolha estiver fechada) -->
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=Inter+Tight:wght@300..800&family=Plus+Jakarta+Sans:wght@300..800&family=Manrope:wght@300..800&family=Sora:wght@300..800&family=Outfit:wght@300..800&family=DM+Sans:wght@300..800&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&f[]=general-sans@300,400,500,600,700&display=swap" rel="stylesheet">
 
 <!-- Hubot Sans self-hosted -->
 <style>
@@ -22,7 +24,7 @@
     font-stretch: 75% 125%;
     font-display: swap;
   }
-  /* Fonte da interface — Geist, com Hubot Sans como fallback */
+  /* Fonte da interface — trocável pelo seletor temporário */
   :root { --fonte: 'Geist'; }
 
   details > summary { list-style: none; }
@@ -2048,6 +2050,59 @@
       });
     })();
   </script>
+
+
+<!-- ==== SELETOR DE FONTE (TEMPORÁRIO — remover depois de escolher) ==== -->
+<div id="fontswitch" style="position:fixed;right:14px;bottom:14px;z-index:9999;background:#14161C;border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:10px 12px;box-shadow:0 10px 40px rgba(0,0,0,.5);font-family:system-ui,sans-serif">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">
+    <span style="color:#8b8f99;font-size:10px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase">Fonte</span>
+    <button onclick="document.getElementById('fontswitch').remove()" style="background:none;border:none;color:#6b7280;font-size:15px;line-height:1;cursor:pointer;padding:0 2px">&times;</button>
+  </div>
+  <div id="fontbtns" style="display:flex;flex-direction:column;gap:5px;max-height:60vh;overflow-y:auto"></div>
+</div>
+<script>
+(function(){
+  var fontes = [
+    ['Geist',              "'Geist'"],
+    ['Inter Tight',        "'Inter Tight'"],
+    ['Plus Jakarta Sans',  "'Plus Jakarta Sans'"],
+    ['Satoshi',            "'Satoshi'"],
+    ['Manrope',            "'Manrope'"],
+    ['Sora',               "'Sora'"],
+    ['Outfit',             "'Outfit'"],
+    ['DM Sans',            "'DM Sans'"],
+    ['General Sans',       "'General Sans'"],
+    ['Hubot Sans (atual)', "'Hubot Sans'"]
+  ];
+  var box = document.getElementById('fontbtns');
+  var atual = localStorage.getItem('ph-fonte') || "'Geist'";
+  document.documentElement.style.setProperty('--fonte', atual);
+
+  fontes.forEach(function(f){
+    var b = document.createElement('button');
+    b.textContent = f[0];
+    b.dataset.val = f[1];
+    b.style.cssText = 'text-align:left;cursor:pointer;border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:600;border:1px solid transparent;transition:.15s;font-family:'+f[1]+',system-ui,sans-serif';
+    b.onclick = function(){
+      document.documentElement.style.setProperty('--fonte', f[1]);
+      localStorage.setItem('ph-fonte', f[1]);
+      pinta();
+    };
+    box.appendChild(b);
+  });
+
+  function pinta(){
+    var v = getComputedStyle(document.documentElement).getPropertyValue('--fonte').trim();
+    [].forEach.call(box.children, function(b){
+      var on = b.dataset.val === v;
+      b.style.background   = on ? '#E2312A' : 'rgba(255,255,255,.06)';
+      b.style.color        = on ? '#fff'    : '#c9ccd2';
+      b.style.borderColor  = on ? '#E2312A' : 'rgba(255,255,255,.1)';
+    });
+  }
+  pinta();
+})();
+</script>
 
 </body>
 </html>
