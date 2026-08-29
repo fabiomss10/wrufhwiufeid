@@ -14,13 +14,17 @@ const router = express.Router();
  * subscription.renewed" — falta descobrir se é uma permissão extra ou se o
  * nome do evento é outro; não é bloqueante pro checkout.)
  *
- * VERIFICAÇÃO DE ASSINATURA: a doc não detalhou o algoritmo exato (não achei
- * a página específica), então implementei o padrão universal do mercado
- * (Stripe, Mercado Pago, etc.) — HMAC-SHA256 do corpo cru, em hex, comparado
- * com o header `X-Webhook-Signature`. Se a primeira chamada real da Naut
- * vier com a assinatura rejeitada, provavelmente é só o nome do header ou a
- * codificação (hex vs base64) que precisam ajustar — o log abaixo mostra o
- * que chegou pra comparar.
+ * VERIFICAÇÃO DE ASSINATURA: HMAC-SHA256 do corpo cru, em hex, comparado com
+ * o header `X-Webhook-Signature` — confirmado contra a doc oficial
+ * (https://navenaut.com/api/public/v1/webhooks/llm.txt) e validado com um
+ * pagamento real em produção (29/08, Pix de R$1 em modo live).
+ *
+ * Nota: webhooks são por ORGANIZAÇÃO, não por ambiente da chave (test/live)
+ * — um webhook cadastrado com a chave de teste continua ativo e recebendo
+ * eventos mesmo depois de trocar pra chave live, cada um com o seu próprio
+ * signingSecret. Cadastrar um webhook novo pro live sem apagar o antigo faz
+ * a Naut mandar o MESMO evento pros dois — o antigo falha pra sempre (nosso
+ * servidor só guarda um secret por vez), o que parece um bug mas é só ruído.
  */
 function assinaturaValida(req) {
   const segredo = process.env.NAUT_WEBHOOK_SECRET;
@@ -31,13 +35,6 @@ function assinaturaValida(req) {
     return true;
   }
   const esperada = crypto.createHmac('sha256', segredo).update(req.rawBody || '').digest('hex');
-  const esperadaBase64 = crypto.createHmac('sha256', segredo).update(req.rawBody || '').digest('base64');
-  // DEBUG TEMPORÁRIO — remover depois de descobrir o formato certo da assinatura.
-  console.log('[webhook naut][debug] recebida:', recebida);
-  console.log('[webhook naut][debug] esperada (hex):', esperada);
-  console.log('[webhook naut][debug] esperada (base64):', esperadaBase64);
-  console.log('[webhook naut][debug] segredo usado (primeiros 6 chars):', (segredo || '').slice(0, 6));
-  console.log('[webhook naut][debug] rawBody:', req.rawBody ? req.rawBody.toString('utf8').slice(0, 300) : '(vazio)');
   try {
     return crypto.timingSafeEqual(Buffer.from(recebida), Buffer.from(esperada));
   } catch {
