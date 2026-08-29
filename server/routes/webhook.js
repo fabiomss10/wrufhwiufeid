@@ -31,6 +31,13 @@ function assinaturaValida(req) {
     return true;
   }
   const esperada = crypto.createHmac('sha256', segredo).update(req.rawBody || '').digest('hex');
+  const esperadaBase64 = crypto.createHmac('sha256', segredo).update(req.rawBody || '').digest('base64');
+  // DEBUG TEMPORÁRIO — remover depois de descobrir o formato certo da assinatura.
+  console.log('[webhook naut][debug] recebida:', recebida);
+  console.log('[webhook naut][debug] esperada (hex):', esperada);
+  console.log('[webhook naut][debug] esperada (base64):', esperadaBase64);
+  console.log('[webhook naut][debug] segredo usado (primeiros 6 chars):', (segredo || '').slice(0, 6));
+  console.log('[webhook naut][debug] rawBody:', req.rawBody ? req.rawBody.toString('utf8').slice(0, 300) : '(vazio)');
   try {
     return crypto.timingSafeEqual(Buffer.from(recebida), Buffer.from(esperada));
   } catch {
