@@ -53,6 +53,13 @@ button{font:inherit;color:inherit}
 @media(max-width:1100px){.card{margin-left:0}}
 @media(max-width:520px){.card{padding:26px 20px}}
 
+/* Altura fixa: sem isso, o cartão muda de tamanho a cada pergunta (mais ou
+   menos opções, texto de uma ou duas linhas) e o layout "pula" a cada
+   clique. min-height cobre o conteúdo mais alto (pergunta de 4 opções) e
+   o restante fica top-aligned — nunca estica além disso nas 6 perguntas
+   nem no resultado, então na prática funciona como altura fixa. */
+.miolo{min-height:440px}
+
 .topo-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
 .marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
 .marca img{width:30px;height:30px;border-radius:8px;display:block}
@@ -159,7 +166,7 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
       <span class="pais">🇧🇷 BR</span>
     </div>
 
-    <div id="miolo"></div>
+    <div id="miolo" class="miolo"></div>
   </main>
 
   <div class="frase" aria-hidden="true">
@@ -346,8 +353,8 @@ function renderResultado(){
   var nivel, classe, titulo, texto;
   if (soma <= 4) {
     nivel = 'Diagnóstico: risco leve'; classe = 'leve';
-    titulo = 'Você já está no caminho certo.';
-    texto = 'Sua gestão tá mais organizada que a da maioria dos personais — mas alguns pontos ainda dependem de você lembrar na hora certa, e isso um dia vai custar caro (um aluno que some, um mês que fecha no vermelho sem avisar).';
+    titulo = 'Sua gestão ainda depende 100% de você lembrar de tudo.';
+    texto = 'Suas respostas mostram uma operação relativamente organizada — mas inteiramente manual: um esquecimento, uma semana mais corrida, e a cobrança ou o acompanhamento de um aluno atrasam. Isso é fragilidade disfarçada de estabilidade.';
   } else if (soma <= 9) {
     nivel = 'Diagnóstico: risco moderado'; classe = 'moderado';
     titulo = 'Seu negócio ainda depende de você lembrar de tudo.';
