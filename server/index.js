@@ -19,6 +19,7 @@ const path = require('path');
 const checkoutRoutes = require('./routes/checkout');
 const webhookRoutes = require('./routes/webhook');
 const contaRoutes = require('./routes/conta');
+const quizRoutes = require('./routes/quiz');
 const naut = require('./naut');
 
 const app = express();
@@ -46,6 +47,7 @@ app.use(cookieParser());
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/conta', contaRoutes);
+app.use('/api/quiz', quizRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, nautConfigurada: naut.chavesConfiguradas() });
