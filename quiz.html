@@ -58,7 +58,7 @@ button{font:inherit;color:inherit}
    clique. min-height cobre o conteúdo mais alto (pergunta de 4 opções) e
    o restante fica top-aligned — nunca estica além disso nas 6 perguntas
    nem no resultado, então na prática funciona como altura fixa. */
-.miolo{min-height:440px}
+.miolo{min-height:440px;display:flex;flex-direction:column;justify-content:center}
 
 /* Nas perguntas com menos opções (3 em vez de 4), sobrava um vão vazio
    embaixo da última resposta porque tudo ficava alinhado no topo do
