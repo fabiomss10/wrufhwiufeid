@@ -100,17 +100,22 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
 .resultado p{margin-top:12px;font-size:13.5px;line-height:1.65;color:var(--muted)}
 .resultado p b{color:var(--off)}
 
-/* ---------- diagnóstico item a item (problema → solução) ---------- */
-.diagnostico{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-.diag-item{padding:13px 15px;border-radius:12px;border:1px solid var(--stroke);background:rgba(247,243,243,.03)}
-.diag-problema{display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:600;color:#ff8f82}
-.diag-problema svg{width:14px;height:14px;flex:none;margin-top:2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.diag-solucao{display:flex;align-items:flex-start;gap:8px;margin-top:8px;font-size:12.5px;line-height:1.55;color:var(--muted)}
-.diag-solucao svg{width:14px;height:14px;flex:none;margin-top:2px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;color:#6fc08d}
-.diag-solucao b{color:var(--off);font-weight:600}
-.diag-ok{display:flex;align-items:center;gap:9px;padding:14px 16px;border-radius:12px;
-  border:1px solid rgba(79,160,108,.4);background:rgba(79,160,108,.1);font-size:13.5px;color:var(--off)}
-.diag-ok svg{width:18px;height:18px;flex:none;fill:none;stroke:#6fc08d;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.resultado .intro-solucao{margin-top:16px;font-size:13.5px;font-weight:600;color:var(--off)}
+
+/* ---------- scanner (animação de análise entre a última pergunta e o resultado) ---------- */
+.scanner{padding:14px 0 4px;text-align:center}
+.radar{position:relative;width:104px;height:104px;margin:4px auto 24px;border-radius:50%;
+  border:1px solid rgba(247,243,243,.14);overflow:hidden;
+  background:repeating-radial-gradient(circle, rgba(247,243,243,.05) 0 1px, transparent 1px 20px)}
+.radar::before{content:"";position:absolute;inset:-2px;border-radius:50%;
+  background:conic-gradient(from 0deg, var(--primary-light), rgba(226,49,42,0) 32%);
+  animation:girarRadar 1.3s linear infinite}
+.radar::after{content:"";position:absolute;inset:38%;border-radius:50%;
+  background:var(--primary-light);box-shadow:0 0 22px 5px rgba(226,49,42,.65)}
+@keyframes girarRadar{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.radar::before{animation-duration:3.5s}}
+.scanner h2{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.scanner-status{margin-top:9px;font-size:12.5px;color:var(--muted-2);min-height:18px;transition:opacity .15s}
 
 .btn{margin-top:22px;width:100%;height:53px;display:inline-flex;align-items:center;justify-content:center;gap:10px;
   background:linear-gradient(90deg,var(--primary-light),var(--primary-dark));color:#fff;border:0;border-radius:8px;
@@ -174,11 +179,7 @@ var PERGUNTAS = [
       { texto: "1 a 2", valor: 1 },
       { texto: "3 a 5", valor: 2 },
       { texto: "Perdi a conta", valor: 3 }
-    ],
-    diagnostico: {
-      problema: "Você já perdeu alunos que sumiram sem avisar.",
-      solucao: "Alerta automático de aluno em risco de evasão — antes do cancelamento, não depois."
-    }
+    ]
   },
   {
     pergunta: "Como você cobra seus alunos hoje?",
@@ -187,11 +188,7 @@ var PERGUNTAS = [
       { texto: "Eu mesmo cobro no WhatsApp", valor: 1 },
       { texto: "Fico com vergonha e deixo passar", valor: 2 },
       { texto: "Já esqueci de cobrar alguém", valor: 3 }
-    ],
-    diagnostico: {
-      problema: "Cobrar aluno ainda depende de você (e do WhatsApp).",
-      solucao: "Cobrança automática recorrente via Pix e cartão — sem constrangimento, sem esquecer."
-    }
+    ]
   },
   {
     pergunta: "Você sabe, hoje, quanto vai faturar no mês que vem?",
@@ -199,11 +196,7 @@ var PERGUNTAS = [
       { texto: "Sei exatamente", valor: 0 },
       { texto: "Tenho uma ideia", valor: 1 },
       { texto: "Não faço ideia", valor: 2 }
-    ],
-    diagnostico: {
-      problema: "Você não sabe, com certeza, quanto vai faturar no mês que vem.",
-      solucao: "Painel financeiro com previsão de recebimentos, atualizado sozinho."
-    }
+    ]
   },
   {
     pergunta: "Quantas horas por semana você perde montando treino/dieta e organizando WhatsApp, em vez de treinar aluno?",
@@ -211,11 +204,7 @@ var PERGUNTAS = [
       { texto: "Menos de 2h", valor: 0 },
       { texto: "2 a 5h", valor: 1 },
       { texto: "Mais de 5h", valor: 2 }
-    ],
-    diagnostico: {
-      problema: "Parte da sua semana vira gestão de treino/dieta em vez de treinar aluno.",
-      solucao: "Montador de treino e dieta que faz o trabalho repetitivo por você."
-    }
+    ]
   },
   {
     pergunta: "Hoje, um aluno em potencial te vê como...?",
@@ -223,11 +212,7 @@ var PERGUNTAS = [
       { texto: "Um profissional com página/app próprio", valor: 0 },
       { texto: "Só um perfil de Instagram", valor: 1 },
       { texto: "Só indicação boca a boca", valor: 2 }
-    ],
-    diagnostico: {
-      problema: "Sua imagem profissional depende só de Instagram ou indicação.",
-      solucao: "Página pública profissional, com a sua marca — não a de outro app."
-    }
+    ]
   },
   {
     pergunta: "Você já se sentiu mais \"cobrador e gestor\" do que personal de verdade?",
@@ -235,12 +220,20 @@ var PERGUNTAS = [
       { texto: "Quase nunca", valor: 0 },
       { texto: "Às vezes", valor: 1 },
       { texto: "Direto", valor: 2 }
-    ],
-    diagnostico: {
-      problema: "Você virou mais gestor e cobrador do que personal de verdade.",
-      solucao: "Gestão no piloto automático — pra você voltar a ser só personal."
-    }
+    ]
   }
+];
+
+// Mensagens exibidas durante a "análise" — puramente de percepção (a soma
+// já foi calculada), mas dá a sensação de que cada resposta foi realmente
+// processada antes do diagnóstico aparecer.
+var STATUS_SCANNER = [
+  "Analisando suas respostas...",
+  "Verificando inadimplência e evasão de alunos...",
+  "Verificando processo de cobrança...",
+  "Calculando previsibilidade financeira...",
+  "Avaliando tempo gasto em gestão...",
+  "Montando seu diagnóstico..."
 ];
 
 var respostas = [];
@@ -282,21 +275,14 @@ function renderPergunta(){
       respostas.push(valor);
       setTimeout(function(){
         passo++;
-        if (passo >= PERGUNTAS.length) renderResultado();
+        if (passo >= PERGUNTAS.length) renderScanner();
         else renderPergunta();
       }, 220);
     });
   });
 }
 
-function iconeAlerta(){
-  return '<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 2.7 17.2c-.5.9.1 2 1.2 2h16.2c1.1 0 1.7-1.1 1.2-2L13.7 3.9c-.6-1-2-1-2.6 0z"/></svg>';
-}
-function iconeSolucao(){
-  return '<svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg>';
-}
-
-function salvarRespostas(soma, nivel){
+function salvarRespostas(){
   // Sem nome/e-mail — só o padrão de respostas, pra registro/análise
   // interna. Falha silenciosa: se o servidor estiver fora do ar, o quiz
   // continua funcionando normalmente pra quem está respondendo.
@@ -307,50 +293,62 @@ function salvarRespostas(soma, nivel){
   }).catch(function(){});
 }
 
+/* Animação de "análise" entre a última pergunta e o resultado — dispara o
+   salvamento em paralelo (não espera resposta do servidor pra seguir) e
+   troca a mensagem de status a cada ~380ms, ciclando por STATUS_SCANNER
+   uma vez (~2.3s no total), antes de mostrar o diagnóstico. */
+function renderScanner(){
+  salvarRespostas();
+
+  var html = '';
+  html += '<div class="scanner">';
+  html += '<div class="radar" aria-hidden="true"></div>';
+  html += '<h2>Analisando seu diagnóstico...</h2>';
+  html += '<p class="scanner-status" id="statusScanner">' + STATUS_SCANNER[0] + '</p>';
+  html += '</div>';
+  miolo.innerHTML = html;
+
+  var i = 0;
+  var statusEl = document.getElementById('statusScanner');
+  var intervalo = setInterval(function(){
+    i++;
+    if (i >= STATUS_SCANNER.length) {
+      clearInterval(intervalo);
+      renderResultado();
+      return;
+    }
+    statusEl.style.opacity = '0';
+    setTimeout(function(){
+      statusEl.textContent = STATUS_SCANNER[i];
+      statusEl.style.opacity = '1';
+    }, 150);
+  }, 380);
+}
+
 function renderResultado(){
   var soma = respostas.reduce(function(a, b){ return a + b; }, 0);
   var nivel, classe, titulo, texto;
   if (soma <= 4) {
     nivel = 'Diagnóstico: risco leve'; classe = 'leve';
     titulo = 'Você já está no caminho certo.';
-    texto = 'Sua gestão tá mais organizada que a da maioria dos personais — mas olha o que ainda dá pra resolver:';
+    texto = 'Sua gestão tá mais organizada que a da maioria dos personais — mas alguns pontos ainda dependem de você lembrar na hora certa, e isso um dia vai custar caro (um aluno que some, um mês que fecha no vermelho sem avisar).';
   } else if (soma <= 9) {
     nivel = 'Diagnóstico: risco moderado'; classe = 'moderado';
     titulo = 'Seu negócio ainda depende de você lembrar de tudo.';
-    texto = 'Encontramos alguns pontos que estão custando tempo e dinheiro sem você perceber:';
+    texto = 'Nas suas respostas, identificamos que alguns alunos já escapam, algum dinheiro fica pelo caminho, e parte do seu tempo ainda vira gestão em vez de treino — sinais claros de que a operação tá no manual quando podia estar no automático.';
   } else {
     nivel = 'Diagnóstico: risco alto'; classe = 'grave';
     titulo = 'Você está perdendo dinheiro sem perceber.';
-    texto = 'Encontramos vários pontos que estão custando tempo e dinheiro sem você perceber:';
+    texto = 'Nas suas respostas, identificamos vários pontos que já estão custando tempo e dinheiro: aluno que some sem avisar, cobrança que fica pra depois, e um faturamento mais imprevisível do que devia. Isso não é falta de esforço seu — é falta de sistema.';
   }
-
-  salvarRespostas(soma, nivel);
-
-  var problemas = PERGUNTAS.filter(function(p, i){ return respostas[i] > 0; });
 
   var html = '';
   html += '<div class="resultado">';
   html += '<span class="selo-nivel ' + classe + '">' + nivel + '</span>';
   html += '<h1>' + titulo + '</h1>';
-
-  if (problemas.length === 0) {
-    html += '<div class="diag-ok" style="margin-top:14px">' +
-      '<svg viewBox="0 0 24 24"><path d="m5 13 4.2 4.2L19 7.5"/></svg>' +
-      '<span>Nenhum problema crítico identificado — seu negócio já está bem redondo. Ainda assim, veja como automatizar de vez:</span>' +
-    '</div>';
-  } else {
-    html += '<p>' + texto + '</p>';
-    html += '<div class="diagnostico">';
-    problemas.forEach(function(p){
-      html += '<div class="diag-item">' +
-        '<div class="diag-problema">' + iconeAlerta() + '<span>' + p.diagnostico.problema + '</span></div>' +
-        '<div class="diag-solucao">' + iconeSolucao() + '<span><b>Como o PersonalHub resolve:</b> ' + p.diagnostico.solucao + '</span></div>' +
-      '</div>';
-    });
-    html += '</div>';
-  }
-
-  html += '<button class="btn" id="btnVerSolucao" type="button">Quero resolver isso <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+  html += '<p>' + texto + '</p>';
+  html += '<p class="intro-solucao">O PersonalHub existe justamente pra resolver isso, no piloto automático.</p>';
+  html += '<button class="btn" id="btnVerSolucao" type="button">Ver a solução <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
   html += '</div>';
   html += '<div class="pe"><a href="index.html">Ir direto pro site</a></div>';
   miolo.innerHTML = html;
