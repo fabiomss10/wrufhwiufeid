@@ -104,16 +104,13 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
 
 /* ---------- scanner (animação de análise entre a última pergunta e o resultado) ---------- */
 .scanner{padding:14px 0 4px;text-align:center}
-.radar{position:relative;width:104px;height:104px;margin:4px auto 24px;border-radius:50%;
-  border:1px solid rgba(247,243,243,.14);overflow:hidden;
-  background:repeating-radial-gradient(circle, rgba(247,243,243,.05) 0 1px, transparent 1px 20px)}
-.radar::before{content:"";position:absolute;inset:-2px;border-radius:50%;
-  background:conic-gradient(from 0deg, var(--primary-light), rgba(226,49,42,0) 32%);
-  animation:girarRadar 1.3s linear infinite}
-.radar::after{content:"";position:absolute;inset:38%;border-radius:50%;
-  background:var(--primary-light);box-shadow:0 0 22px 5px rgba(226,49,42,.65)}
-@keyframes girarRadar{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.radar::before{animation-duration:3.5s}}
+.anel-carregamento{position:relative;width:108px;height:108px;margin:4px auto 26px}
+.anel-carregamento svg{width:100%;height:100%;transform:rotate(-90deg)}
+.anel-carregamento circle{fill:none;stroke-width:5}
+.anel-fundo{stroke:rgba(247,243,243,.09)}
+.anel-progresso{stroke:var(--primary-light);stroke-linecap:round}
+.anel-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:23px;font-weight:700;letter-spacing:-.02em;color:var(--off);font-variant-numeric:tabular-nums}
 .scanner h2{font-size:16px;font-weight:700;letter-spacing:-.01em}
 .scanner-status{margin-top:9px;font-size:12.5px;color:var(--muted-2);min-height:18px;transition:opacity .15s}
 
@@ -294,35 +291,54 @@ function salvarRespostas(){
 }
 
 /* Animação de "análise" entre a última pergunta e o resultado — dispara o
-   salvamento em paralelo (não espera resposta do servidor pra seguir) e
-   troca a mensagem de status a cada ~380ms, ciclando por STATUS_SCANNER
-   uma vez (~2.3s no total), antes de mostrar o diagnóstico. */
+   salvamento em paralelo (não espera resposta do servidor pra seguir).
+   Anel circular preenche de 0% a 100% em exatos 2s (requestAnimationFrame,
+   não setInterval — fica suave em qualquer taxa de atualização de tela),
+   com o número da porcentagem no centro e o status embaixo trocando em
+   sincronia com o progresso, não num timer separado. */
 function renderScanner(){
   salvarRespostas();
 
+  var raio = 46, circunferencia = 2 * Math.PI * raio;
   var html = '';
   html += '<div class="scanner">';
-  html += '<div class="radar" aria-hidden="true"></div>';
+  html += '<div class="anel-carregamento">';
+  html += '<svg viewBox="0 0 100 100" aria-hidden="true">';
+  html += '<circle class="anel-fundo" cx="50" cy="50" r="' + raio + '"/>';
+  html += '<circle class="anel-progresso" id="anelProgresso" cx="50" cy="50" r="' + raio + '" ' +
+    'stroke-dasharray="' + circunferencia + '" stroke-dashoffset="' + circunferencia + '"/>';
+  html += '</svg>';
+  html += '<div class="anel-pct" id="anelPct">0%</div>';
+  html += '</div>';
   html += '<h2>Analisando seu diagnóstico...</h2>';
   html += '<p class="scanner-status" id="statusScanner">' + STATUS_SCANNER[0] + '</p>';
   html += '</div>';
   miolo.innerHTML = html;
 
-  var i = 0;
+  var DURACAO = 2000;
+  var inicio = null;
+  var anelEl = document.getElementById('anelProgresso');
+  var pctEl = document.getElementById('anelPct');
   var statusEl = document.getElementById('statusScanner');
-  var intervalo = setInterval(function(){
-    i++;
-    if (i >= STATUS_SCANNER.length) {
-      clearInterval(intervalo);
-      renderResultado();
-      return;
+  var statusIdx = 0;
+
+  function quadro(agora){
+    if (!inicio) inicio = agora;
+    var progresso = Math.min((agora - inicio) / DURACAO, 1);
+    anelEl.setAttribute('stroke-dashoffset', circunferencia * (1 - progresso));
+    pctEl.textContent = Math.round(progresso * 100) + '%';
+
+    var novoIdx = Math.min(Math.floor(progresso * STATUS_SCANNER.length), STATUS_SCANNER.length - 1);
+    if (novoIdx !== statusIdx) {
+      statusIdx = novoIdx;
+      statusEl.style.opacity = '0';
+      setTimeout(function(){ statusEl.textContent = STATUS_SCANNER[statusIdx]; statusEl.style.opacity = '1'; }, 90);
     }
-    statusEl.style.opacity = '0';
-    setTimeout(function(){
-      statusEl.textContent = STATUS_SCANNER[i];
-      statusEl.style.opacity = '1';
-    }, 150);
-  }, 380);
+
+    if (progresso < 1) requestAnimationFrame(quadro);
+    else renderResultado();
+  }
+  requestAnimationFrame(quadro);
 }
 
 function renderResultado(){
