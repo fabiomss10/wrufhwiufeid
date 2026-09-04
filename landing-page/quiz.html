@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="icon" href="../icone-ph.png" type="image/png">
+<meta name="theme-color" content="#0e0f12">
+<title>Quiz · PersonalHub</title>
+<meta name="description" content="Responda 6 perguntas rápidas e descubra se você está perdendo dinheiro e tempo sem perceber na gestão dos seus alunos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700,900&display=swap" rel="stylesheet">
+<style>
+/* Mesma base visual do checkout.html/criar-conta.html — cartão de vidro,
+   glow vermelho, frase à direita. Aqui o "form" é uma pergunta de múltipla
+   escolha por vez, com barra de progresso, e no final um diagnóstico que
+   redireciona pra landing (index.html) — sem captura de nome/e-mail, só
+   as 6 perguntas mesmo. */
+:root{
+  --obsidiana:#0e0f12; --obsidiana-2:#17181d;
+  --primary:#E2312A; --primary-light:#E5403E; --primary-dark:#882828;
+  --off:#F7F3F3; --muted:rgba(247,243,243,.72); --muted-2:rgba(247,243,243,.5);
+  --stroke:rgba(247,243,243,.13);
+  --fonte:'Satoshi','Hubot Sans',system-ui,-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--fonte);background:#0b0b0d;color:var(--off);
+  -webkit-font-smoothing:antialiased;font-size:15px;line-height:1.6;
+  min-height:100svh;position:relative;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+
+.fundo{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:#0b0b0d}
+.bolha{position:absolute;border-radius:50%;filter:blur(90px);opacity:.85}
+.b1{width:60vw;height:60vw;right:-14vw;top:-22vw;
+  background:radial-gradient(circle at 40% 40%, var(--primary-light) 0%, var(--primary-dark) 42%, rgba(136,40,40,0) 72%)}
+.b2{width:44vw;height:44vw;right:6vw;top:6vw;
+  background:radial-gradient(circle at 50% 50%, #ff6b5b 0%, rgba(255,107,91,.35) 45%, rgba(255,107,91,0) 70%);opacity:.5}
+.b3{width:52vw;height:52vw;left:-18vw;bottom:-20vw;
+  background:radial-gradient(circle at 60% 40%, var(--primary) 0%, #4a1616 45%, rgba(74,22,22,0) 72%)}
+@media(max-width:900px){.bolha{filter:blur(70px)}}
+
+.tela{position:relative;z-index:1;min-height:100svh;display:grid;
+  grid-template-columns:minmax(0,860px) minmax(0,1fr);align-items:center;gap:40px;
+  padding:48px 40px}
+@media(max-width:1100px){.tela{grid-template-columns:minmax(0,1fr);justify-items:center;padding:40px 22px}}
+
+.card{width:100%;max-width:452px;min-width:0;margin-left:96px;padding:34px;
+  background:rgba(14,15,18,.78);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--stroke);border-radius:20px;
+  box-shadow:0 30px 90px rgba(0,0,0,.55)}
+@media(max-width:1100px){.card{margin-left:0}}
+@media(max-width:520px){.card{padding:26px 20px}}
+
+.topo-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+.marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
+.marca img{width:30px;height:30px;border-radius:8px;display:block}
+.marca .nome{font-weight:700;font-size:17px;letter-spacing:-.01em}
+.pais{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+  border:1px solid var(--stroke);border-radius:8px;font-size:12.5px;color:var(--muted)}
+
+h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
+.abertura{margin-top:9px;font-size:13.5px;color:var(--muted-2);line-height:1.55;max-width:340px}
+
+/* ---------- progresso ---------- */
+.progresso-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.passo{display:inline-block;padding:4px 10px;border-radius:999px;
+  background:rgba(247,243,243,.07);font-size:11.5px;font-weight:700;color:var(--muted-2);
+  letter-spacing:.02em}
+.barra{height:4px;border-radius:999px;background:rgba(247,243,243,.1);overflow:hidden;margin-bottom:22px}
+.barra i{display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,var(--primary-light),var(--primary));
+  transition:width .35s ease}
+.voltar{display:inline-flex;align-items:center;gap:7px;margin-bottom:14px;padding:0;
+  background:none;border:0;font-size:13px;color:var(--muted-2);cursor:pointer;transition:color .2s}
+.voltar:hover{color:var(--off)}
+.voltar svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- opções (mesmo padrão visual dos cards de plano do checkout) ---------- */
+.opcoes{display:grid;gap:10px;margin-top:6px}
+.opcao{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:15px 16px;border-radius:12px;cursor:pointer;text-align:left;
+  border:2px solid rgba(247,243,243,.125);background:transparent;transition:.16s;
+  font-size:14px;font-weight:600;letter-spacing:-.005em;color:var(--off)}
+.opcao:hover{border-color:rgba(247,243,243,.35);background:rgba(247,243,243,.03)}
+.opcao:active{transform:translateY(1px)}
+.opcao.on{border-color:var(--primary-light);background:rgba(226,49,42,.14)}
+.opcao svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round;color:var(--primary-light);opacity:0;transition:opacity .16s}
+.opcao.on svg{opacity:1}
+
+/* ---------- resultado ---------- */
+.selo-nivel{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;
+  font-size:11.5px;font-weight:700;letter-spacing:.02em;margin-bottom:14px}
+.selo-nivel.leve{background:rgba(79,160,108,.16);color:#7fd39c;border:1px solid rgba(79,160,108,.4)}
+.selo-nivel.moderado{background:rgba(224,168,60,.16);color:#e0b45f;border:1px solid rgba(224,168,60,.4)}
+.selo-nivel.grave{background:rgba(226,49,42,.16);color:#ff8f82;border:1px solid rgba(226,49,42,.4)}
+.resultado p{margin-top:12px;font-size:13.5px;line-height:1.65;color:var(--muted)}
+.resultado p b{color:var(--off)}
+
+.btn{margin-top:22px;width:100%;height:53px;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(90deg,var(--primary-light),var(--primary-dark));color:#fff;border:0;border-radius:8px;
+  font-size:15px;font-weight:700;cursor:pointer;transition:filter .2s,transform .12s;
+  box-shadow:0 10px 28px -8px rgba(226,49,42,.55)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px)}
+.btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.pe{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:500;margin-top:16px}
+.pe a{color:var(--muted-2);transition:color .2s;display:inline-flex;align-items:center;min-height:32px}
+.pe a:hover{color:var(--off)}
+
+.frase{justify-self:center;max-width:640px;position:relative}
+@media(max-width:1100px){.frase{display:none}}
+.frase::before{content:"";position:absolute;inset:-15% -20%;z-index:-1;
+  background:radial-gradient(closest-side, rgba(0,0,0,.4) 0%, rgba(0,0,0,0) 72%)}
+.frase p{font-size:clamp(40px,5.8vw,84px);font-weight:300;
+  letter-spacing:-.03em;line-height:1.05;color:var(--off);
+  text-shadow:0 6px 28px rgba(0,0,0,.55)}
+.frase p span{display:block}
+.frase p em{font-style:normal;font-weight:700;color:#ff8f82;
+  text-shadow:0 6px 24px rgba(0,0,0,.65)}
+
+.pular{position:absolute;left:-9999px}
+.pular:focus{left:16px;top:16px;background:var(--off);color:#0e0f12;padding:12px 16px;z-index:50;border-radius:6px}
+</style>
+</head>
+<body>
+
+<a class="pular" href="#card">Pular para o quiz</a>
+
+<div class="fundo" aria-hidden="true">
+  <span class="bolha b1"></span><span class="bolha b2"></span><span class="bolha b3"></span>
+</div>
+
+<div class="tela">
+  <main class="card" id="card">
+    <div class="topo-card">
+      <a class="marca" href="index.html" aria-label="PersonalHub — início">
+        <img src="../icone-ph.png" alt="">
+        <span class="nome">Personal Hub</span>
+      </a>
+      <span class="pais">🇧🇷 BR</span>
+    </div>
+
+    <div id="miolo"></div>
+  </main>
+
+  <div class="frase" aria-hidden="true">
+    <p><span>Sua gestão.</span><span>No <em>piloto</em></span><span><em>automático.</em></span></p>
+  </div>
+</div>
+
+<script>
+var PERGUNTAS = [
+  {
+    pergunta: "Quantos alunos já sumiram sem avisar nos últimos 6 meses?",
+    opcoes: [
+      { texto: "Nenhum", valor: 0 },
+      { texto: "1 a 2", valor: 1 },
+      { texto: "3 a 5", valor: 2 },
+      { texto: "Perdi a conta", valor: 3 }
+    ]
+  },
+  {
+    pergunta: "Como você cobra seus alunos hoje?",
+    opcoes: [
+      { texto: "Pix/cartão automático", valor: 0 },
+      { texto: "Eu mesmo cobro no WhatsApp", valor: 1 },
+      { texto: "Fico com vergonha e deixo passar", valor: 2 },
+      { texto: "Já esqueci de cobrar alguém", valor: 3 }
+    ]
+  },
+  {
+    pergunta: "Você sabe, hoje, quanto vai faturar no mês que vem?",
+    opcoes: [
+      { texto: "Sei exatamente", valor: 0 },
+      { texto: "Tenho uma ideia", valor: 1 },
+      { texto: "Não faço ideia", valor: 2 }
+    ]
+  },
+  {
+    pergunta: "Quantas horas por semana você perde montando treino/dieta e organizando WhatsApp, em vez de treinar aluno?",
+    opcoes: [
+      { texto: "Menos de 2h", valor: 0 },
+      { texto: "2 a 5h", valor: 1 },
+      { texto: "Mais de 5h", valor: 2 }
+    ]
+  },
+  {
+    pergunta: "Hoje, um aluno em potencial te vê como...?",
+    opcoes: [
+      { texto: "Um profissional com página/app próprio", valor: 0 },
+      { texto: "Só um perfil de Instagram", valor: 1 },
+      { texto: "Só indicação boca a boca", valor: 2 }
+    ]
+  },
+  {
+    pergunta: "Você já se sentiu mais \"cobrador e gestor\" do que personal de verdade?",
+    opcoes: [
+      { texto: "Quase nunca", valor: 0 },
+      { texto: "Às vezes", valor: 1 },
+      { texto: "Direto", valor: 2 }
+    ]
+  }
+];
+
+var respostas = [];
+var passo = 0; // 0..5 = perguntas, 6 = resultado
+var miolo = document.getElementById('miolo');
+
+function iconeCheck(){
+  return '<svg viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></svg>';
+}
+
+function renderPergunta(){
+  var p = PERGUNTAS[passo];
+  var pct = Math.round((passo / PERGUNTAS.length) * 100);
+  var html = '';
+  html += '<div class="progresso-topo"><span class="passo">Pergunta ' + (passo + 1) + ' de ' + PERGUNTAS.length + '</span></div>';
+  html += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
+  if (passo > 0) {
+    html += '<button class="voltar" id="btnVoltar" type="button"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Voltar</button>';
+  }
+  html += '<h1>' + p.pergunta + '</h1>';
+  html += '<div class="opcoes">';
+  p.opcoes.forEach(function(op, i){
+    html += '<button class="opcao" type="button" data-valor="' + op.valor + '">' + op.texto + iconeCheck() + '</button>';
+  });
+  html += '</div>';
+  miolo.innerHTML = html;
+
+  var voltarBtn = document.getElementById('btnVoltar');
+  if (voltarBtn) voltarBtn.addEventListener('click', function(){
+    passo--;
+    respostas.pop();
+    renderPergunta();
+  });
+
+  miolo.querySelectorAll('.opcao').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var valor = Number(btn.getAttribute('data-valor'));
+      btn.classList.add('on');
+      respostas.push(valor);
+      setTimeout(function(){
+        passo++;
+        if (passo >= PERGUNTAS.length) renderResultado();
+        else renderPergunta();
+      }, 220);
+    });
+  });
+}
+
+function renderResultado(){
+  var soma = respostas.reduce(function(a, b){ return a + b; }, 0);
+  var nivel, classe, titulo, texto;
+  if (soma <= 4) {
+    nivel = 'Diagnóstico: risco leve'; classe = 'leve';
+    titulo = 'Você já está no caminho certo.';
+    texto = 'Sua gestão tá mais organizada que a da maioria dos personais — mas ainda dá pra tirar a cobrança e o controle financeiro das suas costas de vez, <b>sem planilha e sem ficar de olho no WhatsApp</b>.';
+  } else if (soma <= 9) {
+    nivel = 'Diagnóstico: risco moderado'; classe = 'moderado';
+    titulo = 'Seu negócio ainda depende de você lembrar de tudo.';
+    texto = 'Alguns alunos já escapam, algum dinheiro fica pelo caminho, e parte do seu tempo ainda vira gestão em vez de treino. <b>Dá pra colocar isso no piloto automático.</b>';
+  } else {
+    nivel = 'Diagnóstico: risco alto'; classe = 'grave';
+    titulo = 'Você está perdendo dinheiro sem perceber.';
+    texto = 'Entre aluno que some sem avisar e cobrança que você mesmo esquece de fazer, seu faturamento tá mais imprevisível do que devia — e você virou mais gestor/cobrador do que personal. <b>Isso tem solução.</b>';
+  }
+
+  var html = '';
+  html += '<div class="resultado">';
+  html += '<span class="selo-nivel ' + classe + '">' + nivel + '</span>';
+  html += '<h1>' + titulo + '</h1>';
+  html += '<p>' + texto + '</p>';
+  html += '<button class="btn" id="btnVerSolucao" type="button">Quero resolver isso <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+  html += '</div>';
+  html += '<div class="pe"><a href="index.html">Ir direto pro site</a></div>';
+  miolo.innerHTML = html;
+
+  document.getElementById('btnVerSolucao').addEventListener('click', function(){
+    window.location.href = 'index.html';
+  });
+}
+
+renderPergunta();
+</script>
+</body>
+</html>
