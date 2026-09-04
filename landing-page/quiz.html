@@ -60,12 +60,19 @@ button{font:inherit;color:inherit}
    nem no resultado, então na prática funciona como altura fixa. */
 .miolo{min-height:440px}
 
-.topo-card{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:26px}
+/* Nas perguntas com menos opções (3 em vez de 4), sobrava um vão vazio
+   embaixo da última resposta porque tudo ficava alinhado no topo do
+   cartão de altura fixa. .pergunta-wrap fica em coluna com a mesma altura
+   mínima do cartão; barra/voltar continuam no topo, mas o bloco de
+   pergunta+opções (.corpo-pergunta) ocupa o espaço restante e centraliza
+   o conteúdo nele — o vão sobra dividido em cima/embaixo, não só embaixo. */
+.pergunta-wrap{display:flex;flex-direction:column;min-height:440px}
+.corpo-pergunta{flex:1;display:flex;flex-direction:column;justify-content:center}
+
+.topo-card{display:flex;align-items:center;margin-bottom:26px}
 .marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
 .marca img{width:30px;height:30px;border-radius:8px;display:block}
 .marca .nome{font-weight:700;font-size:17px;letter-spacing:-.01em}
-.pais{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
-  border:1px solid var(--stroke);border-radius:8px;font-size:12.5px;color:var(--muted)}
 
 h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
 .abertura{margin-top:9px;font-size:13.5px;color:var(--muted-2);line-height:1.55;max-width:340px}
@@ -125,10 +132,6 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
 .btn:active{transform:translateY(1px)}
 .btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-.pe{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;font-size:13px;font-weight:500;margin-top:16px}
-.pe a{color:var(--muted-2);transition:color .2s;display:inline-flex;align-items:center;min-height:32px}
-.pe a:hover{color:var(--off)}
-
 .frase{justify-self:center;max-width:640px;position:relative}
 @media(max-width:1100px){.frase{display:none}}
 .frase::before{content:"";position:absolute;inset:-15% -20%;z-index:-1;
@@ -159,7 +162,6 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
         <img src="../icone-ph.png" alt="">
         <span class="nome">Personal Hub</span>
       </a>
-      <span class="pais">🇧🇷 BR</span>
     </div>
 
     <div id="miolo" class="miolo"></div>
@@ -248,16 +250,20 @@ function renderPergunta(){
   var p = PERGUNTAS[passo];
   var pct = Math.round((passo / PERGUNTAS.length) * 100);
   var html = '';
+  html += '<div class="pergunta-wrap">';
   html += '<div class="progresso-topo"><span class="passo">Pergunta ' + (passo + 1) + ' de ' + PERGUNTAS.length + '</span></div>';
   html += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
   if (passo > 0) {
     html += '<button class="voltar" id="btnVoltar" type="button"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Voltar</button>';
   }
+  html += '<div class="corpo-pergunta">';
   html += '<h1>' + p.pergunta + '</h1>';
   html += '<div class="opcoes">';
   p.opcoes.forEach(function(op, i){
     html += '<button class="opcao" type="button" data-valor="' + op.valor + '">' + op.texto + iconeCheck() + '</button>';
   });
+  html += '</div>';
+  html += '</div>';
   html += '</div>';
   miolo.innerHTML = html;
 
@@ -365,7 +371,6 @@ function renderResultado(){
   html += '<p class="intro-solucao">O PersonalHub existe justamente pra resolver isso, no piloto automático.</p>';
   html += '<button class="btn" id="btnVerSolucao" type="button">Ver a solução <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
   html += '</div>';
-  html += '<div class="pe"><a href="index.html">Ir direto pro site</a></div>';
   miolo.innerHTML = html;
 
   document.getElementById('btnVerSolucao').addEventListener('click', function(){
