@@ -66,17 +66,17 @@ button{font:inherit;color:inherit}
 .miolo.livre{min-height:0}
 
 /* Nas perguntas com menos opções (3 em vez de 4), sobra espaço dentro do
-   cartão de altura fixa. Centralizar o bloco pergunta+opções (tentativa
-   anterior) jogava esse vão inteiro pro topo — ficava um buraco estranho
-   entre "Voltar" e a pergunta, com a pergunta "colada" nas opções (gap
-   fixo de 6px). Agora a pergunta fica ancorada perto do topo (gap normal
-   logo após "Voltar") e é o próprio espaço entre pergunta e opções que
-   absorve o vão: margin-top:auto em .opcoes empurra as opções pro fim do
-   .corpo-pergunta, sobrando a "folga" toda ali no meio — que era exatamente
-   o trecho raso demais — em vez de acima da pergunta ou abaixo da última
-   opção. */
+   cartão de altura fixa. Duas tentativas anteriores: centralizar o bloco
+   pergunta+opções inteiro (jogava toda a folga acima da pergunta) e
+   ancorar a pergunta no topo com respiro variável antes das opções
+   (ficava grande demais nas perguntas mais curtas). Agora é a PERGUNTA
+   em si que fica centralizada — margin-top/bottom:auto no h1 divide a
+   folga meio a meio entre "depois da barra de progresso" e "antes da
+   primeira resposta", e as opções mantêm só um respiro fixo e pequeno
+   logo abaixo dela. */
 .pergunta-wrap{display:flex;flex-direction:column;min-height:434px}
 .corpo-pergunta{flex:1;display:flex;flex-direction:column}
+.corpo-pergunta h1{margin-top:auto;margin-bottom:auto}
 
 .topo-card{display:flex;align-items:center;margin-bottom:26px}
 .marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
@@ -102,7 +102,7 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
   stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- opções (mesmo padrão visual dos cards de plano do checkout) ---------- */
-.opcoes{display:grid;gap:10px;margin-top:auto;padding-top:14px}
+.opcoes{display:grid;gap:10px;margin-top:16px}
 .opcao{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:15px 16px;border-radius:12px;cursor:pointer;text-align:left;
   border:2px solid rgba(247,243,243,.125);background:transparent;transition:.16s;
