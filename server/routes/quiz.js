@@ -21,12 +21,13 @@ const QUANTIDADE_PERGUNTAS = 6;
 router.post('/responder', limitadorResponder, (req, res) => {
   const { respostas } = req.body || {};
 
-  if (!Array.isArray(respostas) || respostas.length !== QUANTIDADE_PERGUNTAS || !respostas.every((v) => Number.isInteger(v) && v >= 0)) {
+  // Todas as 6 perguntas têm 4 opções (valores 0 a 3) — soma máxima possível é 18.
+  if (!Array.isArray(respostas) || respostas.length !== QUANTIDADE_PERGUNTAS || !respostas.every((v) => Number.isInteger(v) && v >= 0 && v <= 3)) {
     return res.status(400).json({ success: false, error: { code: 'VALIDATION_ERROR', message: 'Respostas inválidas.' } });
   }
 
   const soma = respostas.reduce((a, b) => a + b, 0);
-  const nivel = soma <= 4 ? 'leve' : soma <= 9 ? 'moderado' : 'grave';
+  const nivel = soma <= 6 ? 'leve' : soma <= 12 ? 'moderado' : 'grave';
 
   const id = quizRespostas.registrar({ respostas, soma, nivel });
   res.status(201).json({ success: true, id, soma, nivel });

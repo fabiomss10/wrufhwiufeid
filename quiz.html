@@ -62,7 +62,7 @@ button{font:inherit;color:inherit}
    assume só o tamanho do próprio conteúdo (.miolo.livre) — evita sobrar
    vão vazio em cima/embaixo só pra manter uma "altura padrão" que nesse
    ponto do fluxo não faz mais falta. */
-.miolo{min-height:434px;display:flex;flex-direction:column;justify-content:center}
+.miolo{min-height:495px;display:flex;flex-direction:column;justify-content:center}
 .miolo.livre{min-height:0}
 
 /* Nas perguntas com menos opções (3 em vez de 4), sobra espaço dentro do
@@ -74,7 +74,7 @@ button{font:inherit;color:inherit}
    folga meio a meio entre "depois da barra de progresso" e "antes da
    primeira resposta", e as opções mantêm só um respiro fixo e pequeno
    logo abaixo dela. */
-.pergunta-wrap{display:flex;flex-direction:column;min-height:434px}
+.pergunta-wrap{display:flex;flex-direction:column;min-height:495px}
 .corpo-pergunta{flex:1;display:flex;flex-direction:column}
 .corpo-pergunta h1{margin-top:auto;margin-bottom:auto}
 
@@ -198,7 +198,7 @@ var PERGUNTAS = [
       { texto: "Pix/cartão automático", valor: 0 },
       { texto: "Eu mesmo cobro no WhatsApp", valor: 1 },
       { texto: "Fico com vergonha e deixo passar", valor: 2 },
-      { texto: "Já esqueci de cobrar alguém", valor: 3 }
+      { texto: "Manualmente, e frequentemente esqueço de cobrar", valor: 3 }
     ]
   },
   {
@@ -206,23 +206,26 @@ var PERGUNTAS = [
     opcoes: [
       { texto: "Sei exatamente", valor: 0 },
       { texto: "Tenho uma ideia", valor: 1 },
-      { texto: "Não faço ideia", valor: 2 }
+      { texto: "Não faço ideia", valor: 2 },
+      { texto: "Nem sei quantos alunos vou ter", valor: 3 }
     ]
   },
   {
-    pergunta: "Quantas horas por semana você perde com treino/dieta e WhatsApp, em vez de treinar aluno?",
+    pergunta: "Quantas horas por semana você perde montando treino/dieta e organizando cobranças, em vez de treinar aluno?",
     opcoes: [
       { texto: "Menos de 2h", valor: 0 },
       { texto: "2 a 5h", valor: 1 },
-      { texto: "Mais de 5h", valor: 2 }
+      { texto: "Mais de 5h", valor: 2 },
+      { texto: "Mais de 10h", valor: 3 }
     ]
   },
   {
-    pergunta: "Hoje, um aluno em potencial te vê como...?",
+    pergunta: "Hoje, como um aluno te encontra e se interessa pelo seu serviço?",
     opcoes: [
-      { texto: "Um profissional com página/app próprio", valor: 0 },
-      { texto: "Só um perfil de Instagram", valor: 1 },
-      { texto: "Só indicação boca a boca", valor: 2 }
+      { texto: "Pela minha página/blog ou por algum app", valor: 0 },
+      { texto: "Pelo meu perfil do Instagram", valor: 1 },
+      { texto: "Só indicação boca a boca", valor: 2 },
+      { texto: "Ele nem me encontra, sou eu que corro atrás", valor: 3 }
     ]
   },
   {
@@ -230,7 +233,8 @@ var PERGUNTAS = [
     opcoes: [
       { texto: "Quase nunca", valor: 0 },
       { texto: "Às vezes", valor: 1 },
-      { texto: "Direto", valor: 2 }
+      { texto: "Direto", valor: 2 },
+      { texto: "O tempo todo — mal sobra tempo pra treinar", valor: 3 }
     ]
   }
 ];
@@ -364,10 +368,10 @@ function renderResultado(){
   miolo.classList.add('livre');
   var soma = respostas.reduce(function(a, b){ return a + b; }, 0);
   var titulo, texto;
-  if (soma <= 4) {
+  if (soma <= 6) {
     titulo = 'Sua gestão ainda depende 100% de você lembrar de tudo.';
     texto = 'Suas respostas mostram uma operação relativamente organizada — mas inteiramente manual: um esquecimento, uma semana mais corrida, e a cobrança ou o acompanhamento de um aluno atrasam. Isso é fragilidade disfarçada de estabilidade.';
-  } else if (soma <= 9) {
+  } else if (soma <= 12) {
     titulo = 'Seu negócio ainda depende de você lembrar de tudo.';
     texto = 'Nas suas respostas, identificamos que alguns alunos já escapam, algum dinheiro fica pelo caminho, e parte do seu tempo ainda vira gestão em vez de treino — sinais claros de que a operação tá no manual quando podia estar no automático.';
   } else {
