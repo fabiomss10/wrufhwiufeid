@@ -56,9 +56,14 @@ button{font:inherit;color:inherit}
 /* Altura fixa: sem isso, o cartão muda de tamanho a cada pergunta (mais ou
    menos opções, texto de uma ou duas linhas) e o layout "pula" a cada
    clique. min-height cobre o conteúdo mais alto (pergunta de 4 opções) e
-   o restante fica top-aligned — nunca estica além disso nas 6 perguntas
-   nem no resultado, então na prática funciona como altura fixa. */
+   o restante fica top-aligned — nunca estica além disso nas 6 perguntas.
+   A tela final de resultado é única (não tem mais nenhum "próximo passo"
+   variando de tamanho depois dela), então ela sai dessa altura fixa e
+   assume só o tamanho do próprio conteúdo (.miolo.livre) — evita sobrar
+   vão vazio em cima/embaixo só pra manter uma "altura padrão" que nesse
+   ponto do fluxo não faz mais falta. */
 .miolo{min-height:396px;display:flex;flex-direction:column;justify-content:center}
+.miolo.livre{min-height:0}
 
 /* Nas perguntas com menos opções (3 em vez de 4), sobrava um vão vazio
    embaixo da última resposta porque tudo ficava alinhado no topo do
@@ -247,6 +252,7 @@ function iconeCheck(){
 }
 
 function renderPergunta(){
+  miolo.classList.remove('livre');
   var p = PERGUNTAS[passo];
   var pct = Math.round((passo / PERGUNTAS.length) * 100);
   var html = '';
@@ -351,6 +357,7 @@ function renderScanner(){
 }
 
 function renderResultado(){
+  miolo.classList.add('livre');
   var soma = respostas.reduce(function(a, b){ return a + b; }, 0);
   var titulo, texto;
   if (soma <= 4) {
