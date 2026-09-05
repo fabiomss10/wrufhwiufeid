@@ -58,7 +58,7 @@ button{font:inherit;color:inherit}
    clique. min-height cobre o conteúdo mais alto (pergunta de 4 opções) e
    o restante fica top-aligned — nunca estica além disso nas 6 perguntas
    nem no resultado, então na prática funciona como altura fixa. */
-.miolo{min-height:440px;display:flex;flex-direction:column;justify-content:center}
+.miolo{min-height:396px;display:flex;flex-direction:column;justify-content:center}
 
 /* Nas perguntas com menos opções (3 em vez de 4), sobrava um vão vazio
    embaixo da última resposta porque tudo ficava alinhado no topo do
@@ -66,7 +66,7 @@ button{font:inherit;color:inherit}
    mínima do cartão; barra/voltar continuam no topo, mas o bloco de
    pergunta+opções (.corpo-pergunta) ocupa o espaço restante e centraliza
    o conteúdo nele — o vão sobra dividido em cima/embaixo, não só embaixo. */
-.pergunta-wrap{display:flex;flex-direction:column;min-height:440px}
+.pergunta-wrap{display:flex;flex-direction:column;min-height:396px}
 .corpo-pergunta{flex:1;display:flex;flex-direction:column;justify-content:center}
 
 .topo-card{display:flex;align-items:center;margin-bottom:26px}
@@ -201,7 +201,7 @@ var PERGUNTAS = [
     ]
   },
   {
-    pergunta: "Quantas horas por semana você perde montando treino/dieta e organizando WhatsApp, em vez de treinar aluno?",
+    pergunta: "Quantas horas por semana você perde com treino/dieta e WhatsApp, em vez de treinar aluno?",
     opcoes: [
       { texto: "Menos de 2h", valor: 0 },
       { texto: "2 a 5h", valor: 1 },
