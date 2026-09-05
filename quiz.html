@@ -62,17 +62,21 @@ button{font:inherit;color:inherit}
    assume só o tamanho do próprio conteúdo (.miolo.livre) — evita sobrar
    vão vazio em cima/embaixo só pra manter uma "altura padrão" que nesse
    ponto do fluxo não faz mais falta. */
-.miolo{min-height:396px;display:flex;flex-direction:column;justify-content:center}
+.miolo{min-height:434px;display:flex;flex-direction:column;justify-content:center}
 .miolo.livre{min-height:0}
 
-/* Nas perguntas com menos opções (3 em vez de 4), sobrava um vão vazio
-   embaixo da última resposta porque tudo ficava alinhado no topo do
-   cartão de altura fixa. .pergunta-wrap fica em coluna com a mesma altura
-   mínima do cartão; barra/voltar continuam no topo, mas o bloco de
-   pergunta+opções (.corpo-pergunta) ocupa o espaço restante e centraliza
-   o conteúdo nele — o vão sobra dividido em cima/embaixo, não só embaixo. */
-.pergunta-wrap{display:flex;flex-direction:column;min-height:396px}
-.corpo-pergunta{flex:1;display:flex;flex-direction:column;justify-content:center}
+/* Nas perguntas com menos opções (3 em vez de 4), sobra espaço dentro do
+   cartão de altura fixa. Centralizar o bloco pergunta+opções (tentativa
+   anterior) jogava esse vão inteiro pro topo — ficava um buraco estranho
+   entre "Voltar" e a pergunta, com a pergunta "colada" nas opções (gap
+   fixo de 6px). Agora a pergunta fica ancorada perto do topo (gap normal
+   logo após "Voltar") e é o próprio espaço entre pergunta e opções que
+   absorve o vão: margin-top:auto em .opcoes empurra as opções pro fim do
+   .corpo-pergunta, sobrando a "folga" toda ali no meio — que era exatamente
+   o trecho raso demais — em vez de acima da pergunta ou abaixo da última
+   opção. */
+.pergunta-wrap{display:flex;flex-direction:column;min-height:434px}
+.corpo-pergunta{flex:1;display:flex;flex-direction:column}
 
 .topo-card{display:flex;align-items:center;margin-bottom:26px}
 .marca{display:inline-flex;align-items:center;gap:9px;color:var(--off)}
@@ -98,7 +102,7 @@ h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
   stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- opções (mesmo padrão visual dos cards de plano do checkout) ---------- */
-.opcoes{display:grid;gap:10px;margin-top:6px}
+.opcoes{display:grid;gap:10px;margin-top:auto;padding-top:14px}
 .opcao{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:15px 16px;border-radius:12px;cursor:pointer;text-align:left;
   border:2px solid rgba(247,243,243,.125);background:transparent;transition:.16s;
