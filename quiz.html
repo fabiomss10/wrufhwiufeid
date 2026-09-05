@@ -86,15 +86,26 @@ button{font:inherit;color:inherit}
 h1{font-size:23px;font-weight:700;letter-spacing:-.02em;line-height:1.28}
 .abertura{margin-top:9px;font-size:13.5px;color:var(--muted-2);line-height:1.55;max-width:340px}
 
-/* ---------- progresso ---------- */
-.progresso-topo{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.passo{display:inline-block;padding:4px 10px;border-radius:999px;
-  background:rgba(247,243,243,.07);font-size:11.5px;font-weight:700;color:var(--muted-2);
-  letter-spacing:.02em}
-.barra{height:4px;border-radius:999px;background:rgba(247,243,243,.1);overflow:hidden;margin-bottom:22px}
-.barra i{display:block;height:100%;border-radius:999px;
-  background:linear-gradient(90deg,var(--primary-light),var(--primary));
-  transition:width .35s ease}
+/* ---------- progresso ----------
+   Rótulo discreto (sem o "badge"/pill de antes — texto miúdo, versalete,
+   bem espaçado, no clima "editorial" em vez de "chip de UI") + barra
+   segmentada em 6 blocos (um por pergunta), no lugar da barrinha única
+   contínua. Cada segmento já respondido acende sólido; o segmento atual
+   pulsa suavemente (mesma linguagem de glow do botão primário) pra puxar
+   o olho pro passo em que a pessoa está; os que faltam ficam num traço
+   fino e apagado. Numera visualmente sem precisar calcular % nenhuma. */
+.progresso-topo{margin-bottom:12px}
+.passo{display:block;font-size:11px;font-weight:700;color:var(--muted-2);
+  letter-spacing:.14em;text-transform:uppercase}
+.passo b{color:var(--off);font-weight:700}
+.barra{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:24px}
+.barra i{display:block;height:4px;border-radius:999px;background:rgba(247,243,243,.1);
+  transition:background .4s ease,box-shadow .4s ease}
+.barra i.feito{background:linear-gradient(90deg,var(--primary-light),var(--primary))}
+.barra i.ativo{background:linear-gradient(90deg,var(--primary-light),var(--primary));
+  box-shadow:0 0 9px 1px rgba(226,49,42,.65);animation:pulsarPasso 1.7s ease-in-out infinite}
+@keyframes pulsarPasso{0%,100%{opacity:1}50%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.barra i.ativo{animation:none}}
 .voltar{display:inline-flex;align-items:center;gap:7px;margin-bottom:14px;padding:0;
   background:none;border:0;font-size:13px;color:var(--muted-2);cursor:pointer;transition:color .2s}
 .voltar:hover{color:var(--off)}
@@ -262,11 +273,15 @@ function iconeCheck(){
 function renderPergunta(){
   miolo.classList.remove('livre');
   var p = PERGUNTAS[passo];
-  var pct = Math.round((passo / PERGUNTAS.length) * 100);
   var html = '';
   html += '<div class="pergunta-wrap">';
-  html += '<div class="progresso-topo"><span class="passo">Pergunta ' + (passo + 1) + ' de ' + PERGUNTAS.length + '</span></div>';
-  html += '<div class="barra"><i style="width:' + pct + '%"></i></div>';
+  html += '<div class="progresso-topo"><span class="passo">Pergunta <b>' + (passo + 1) + '</b> de ' + PERGUNTAS.length + '</span></div>';
+  html += '<div class="barra">';
+  for (var s = 0; s < PERGUNTAS.length; s++) {
+    var classe = s < passo ? 'feito' : (s === passo ? 'ativo' : '');
+    html += '<i class="' + classe + '"></i>';
+  }
+  html += '</div>';
   if (passo > 0) {
     html += '<button class="voltar" id="btnVoltar" type="button"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Voltar</button>';
   }
