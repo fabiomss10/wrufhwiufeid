@@ -240,12 +240,12 @@ var PERGUNTAS = [
     ]
   },
   {
-    pergunta: "Você já se sentiu mais \"cobrador e gestor\" do que personal de verdade?",
+    pergunta: "Você sente que passa mais tempo administrando o negócio do que treinando alunos?",
     opcoes: [
-      { texto: "Quase nunca", valor: 0 },
-      { texto: "Às vezes", valor: 1 },
-      { texto: "Direto", valor: 2 },
-      { texto: "O tempo todo — mal sobra tempo pra treinar", valor: 3 }
+      { texto: "Não, meu foco é treinar", valor: 0 },
+      { texto: "Um pouco, mas dá pra equilibrar", valor: 1 },
+      { texto: "Bastante, isso já atrapalha", valor: 2 },
+      { texto: "Sim — hoje sou mais gestor do que personal", valor: 3 }
     ]
   }
 ];
@@ -385,10 +385,10 @@ function renderResultado(){
   var titulo, texto;
   if (soma <= 6) {
     titulo = 'Sua gestão ainda depende 100% de você lembrar de tudo.';
-    texto = 'Suas respostas mostram uma operação relativamente organizada — mas inteiramente manual: um esquecimento, uma semana mais corrida, e a cobrança ou o acompanhamento de um aluno atrasam. Isso é fragilidade disfarçada de estabilidade.';
+    texto = 'Suas respostas mostram uma operação relativamente organizada — mas inteiramente manual: um esquecimento, uma semana mais corrida, e a cobrança ou o acompanhamento de um aluno atrasam. Isso é fragilidade disfarçada de estabilidade. E fragilidade não avisa antes de virar problema — ela só aparece bem no mês em que você menos pode perder tempo com planilha e WhatsApp.';
   } else if (soma <= 12) {
     titulo = 'Seu negócio ainda depende de você lembrar de tudo.';
-    texto = 'Nas suas respostas, identificamos que alguns alunos já escapam, algum dinheiro fica pelo caminho, e parte do seu tempo ainda vira gestão em vez de treino — sinais claros de que a operação tá no manual quando podia estar no automático.';
+    texto = 'Nas suas respostas, identificamos que alguns alunos já escapam, algum dinheiro fica pelo caminho, e parte do seu tempo ainda vira gestão em vez de treino — sinais claros de que a operação tá no manual quando podia estar no automático. Cada mês que passa assim, um pouco mais de aluno e de faturamento escorre entre a planilha e o WhatsApp.';
   } else {
     titulo = 'Você está perdendo dinheiro sem perceber.';
     texto = 'Nas suas respostas, identificamos vários pontos que já estão custando tempo e dinheiro: aluno que some sem avisar, cobrança que fica pra depois, e um faturamento mais imprevisível do que devia. Isso não é falta de esforço seu — é falta de sistema.';
@@ -398,8 +398,8 @@ function renderResultado(){
   html += '<div class="resultado">';
   html += '<h1>' + titulo + '</h1>';
   html += '<p>' + texto + '</p>';
-  html += '<p class="intro-solucao">O PersonalHub existe justamente pra resolver isso, no piloto automático.</p>';
-  html += '<button class="btn" id="btnVerSolucao" type="button">Ver a solução <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
+  html += '<p class="intro-solucao">Foi pra tirar você da planilha e do WhatsApp que o PersonalHub existe — cobrança, alunos e treino, tudo no piloto automático.</p>';
+  html += '<button class="btn" id="btnVerSolucao" type="button">Ver solução <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>';
   html += '</div>';
   miolo.innerHTML = html;
 
