@@ -397,6 +397,14 @@ input[aria-invalid=true]{border-color:#e0705f}
   </div>
 </div>
 
+<!-- Gera o QR do Pix no próprio navegador a partir do código copia-e-cola.
+     Motivo: a doc da Naut (payments/llm.txt) marca "qrCodeBase64" como campo
+     OPCIONAL na resposta — na prática não vem preenchido, então depender só
+     dele deixa a caixa do QR em branco. O "código copia e cola" (qrCode /
+     copyPasteCode, que a Naut sempre manda) é o mesmíssimo payload que um QR
+     de Pix codifica, então gerar a imagem localmente a partir dele funciona
+     sempre, sem depender desse campo opcional. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script type="module">
 /* PLANOS FIXOS AQUI POR ENQUANTO. Quando a integração com a Naut entrar, isso
    vira uma chamada a algo como `/api/planos` (mesma ideia do Felipe: preço
@@ -410,6 +418,28 @@ const PLANOS = [
 const $ = (s) => document.querySelector(s);
 const esc = (t) => String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const reais = (centavos) => (centavos / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+/* Mostra o QR do Pix na div #qr. Se a Naut mandou a imagem pronta
+   (qrCodeBase64), usa ela. Senão — o caso comum, já que esse campo é
+   opcional na resposta deles —, gera o QR no navegador a partir do próprio
+   código copia-e-cola, que é o mesmo payload que o QR codifica. */
+function mostraQr(codigo, imagemBase64) {
+  const alvo = $("#qr");
+  alvo.innerHTML = "";
+  if (imagemBase64) {
+    alvo.innerHTML = `<img src="${imagemBase64}" alt="QR Code do Pix">`;
+    return;
+  }
+  if (!codigo || typeof QRCode === "undefined") {
+    alvo.innerHTML = `<span>Código gerado — use o Pix copia e cola abaixo.</span>`;
+    return;
+  }
+  try {
+    new QRCode(alvo, { text: codigo, width: 260, height: 260, correctLevel: QRCode.CorrectLevel.M });
+  } catch (e) {
+    alvo.innerHTML = `<span>Código gerado — use o Pix copia e cola abaixo.</span>`;
+  }
+}
 
 const QUAL = (new URLSearchParams(location.search).get("plano") || "profissional").toLowerCase();
 let plano = PLANOS.find(p => p.id === QUAL) || PLANOS.find(p => p.recomendado) || PLANOS[0];
@@ -450,15 +480,24 @@ function escolhePlano(id){
     b.classList.toggle("on", b.dataset.plano === plano.id));
   $("#tituloPlano").textContent = `Assinar o plano ${plano.nome}`;
   $("#totalPix").textContent = reais(plano.centavos);
+  montaOpcoesParcelas();
   pintaTotalCartao();
   history.replaceState(null, "", `?plano=${plano.id}`);
 }
 
-function pintaTotalCartao(){
-  $("#totalPagar").textContent = reais(plano.centavos);
+// Reconstrói as opções de parcela — só precisa rodar quando o PLANO muda
+// (os preços de cada parcela dependem do plano.centavos). Nunca chamar isso
+// no "change" do próprio #kParcelas: sobrescrever o innerHTML do <select>
+// no meio da troca reseta a seleção pro primeiro <option> (1x), fazendo a
+// parcela escolhida pelo cliente nunca chegar de verdade na cobrança.
+function montaOpcoesParcelas(){
   const opcoes = [1, 2, 3, 6, 12].map(n =>
     `<option value="${n}">${n}x de ${reais(Math.round(plano.centavos / n))}${n > 1 ? " com juros" : ""}</option>`).join("");
   $("#kParcelas").innerHTML = opcoes;
+}
+
+function pintaTotalCartao(){
+  $("#totalPagar").textContent = reais(plano.centavos);
 }
 
 /* ---------------------------------------------------- passo 1 → passo 2 */
@@ -577,7 +616,7 @@ $("#formPag").addEventListener("submit", async (ev) => {
     codigoPix = real.copiaecola || "";
     $("#codigoPix").textContent = codigoPix || "—";
     $("#totalPix").textContent = reais(real.valor || plano.centavos);
-    $("#qr").innerHTML = real.qr ? `<img src="${real.qr}" alt="QR Code do Pix">` : `<span>Código gerado — use o Pix copia e cola abaixo.</span>`;
+    mostraQr(codigoPix, real.qr);
     b.disabled = false; b.innerHTML = antes;
     mostra("etPix");
     return esperaPagamento(true);
@@ -593,7 +632,7 @@ $("#formPag").addEventListener("submit", async (ev) => {
   codigoPix = "00020126580014BR.GOV.BCB.PIX0136demo-personalhub-nao-e-real-520400005303986540" + (plano.centavos / 100).toFixed(2).replace(".", "") + "5802BR5913PersonalHub6009SAO PAULO62070503***6304ABCD";
   $("#codigoPix").textContent = codigoPix;
   $("#totalPix").textContent = reais(plano.centavos);
-  $("#qr").innerHTML = `<span>QR ilustrativo — a geração real do código Pix entra com a integração da Naut.</span>`;
+  mostraQr(codigoPix, "");
   b.disabled = false; b.innerHTML = antes;
   mostra("etPix");
   esperaPagamento(false);
